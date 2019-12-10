@@ -43,7 +43,7 @@ optimize!(m)
 @show "x value is: " value.(x)
 @show "y value is: " value.(y)
 ```
-- you should get an objective value of 10.6
+- If Mosek has been installed correctly, you should get an objective value of 10.6
 
 
 
