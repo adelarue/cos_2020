@@ -6,7 +6,7 @@ Before the first class, please complete the following tasks:
 
 * We will be using Github to distribute code. Please go to www.github.com and make a free account.
 
-## Task 2 (Windows Users Only): Install cygwin
+## Task 2 (Windows Users Only): Install Cygwin
 * Windows users will need to run unix based command line.
 * To do this, please install Cygwin by navigating to https://www.cygwin.com/
 * Install Cygwin by running the setup-x86_64.exe file
