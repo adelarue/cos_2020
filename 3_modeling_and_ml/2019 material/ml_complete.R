@@ -557,7 +557,8 @@ lasso_price$lambda[20]
 lasso_price$beta[which(lasso_price$beta[, 20] != 0), 20]
 
 # And, to see the whole path of lambdas:	
-plot.glmnet(lasso_price, xvar = "lambda")
+#plot.glmnet(lasso_price, xvar = "lambda")
+plot(lasso_price, xvar = "lambda")
 
 # Here, each line is one variable. The plot is quite messy with
 # so many variables, but it gives us the idea. As lambda shrinks,
@@ -607,7 +608,8 @@ summary(lasso_price_cv) # What does the model object look like?
 
 # There's another automatic plotting function for `cv.glmnet()`
 # which shows the error for each model:	
-plot.cv.glmnet(lasso_price_cv)
+#plot.cv.glmnet(lasso_price_cv)
+plot(lasso_price_cv)
 
 # The first vertical dotted line shows `lambda.min`, and the
 # second is `lambda.1se`. The figure illustrates that we cross-validate
@@ -620,10 +622,12 @@ plot.cv.glmnet(lasso_price_cv)
 # Let's again compare training and test error. Because we are using
 # glmnet we need to use the specialized `predict.cv.glmnet()` function:
 ?predict.cv.glmnet
-pred_train <- predict.cv.glmnet(lasso_price_cv, newx = xTrain, s = "lambda.min")
+#pred_train <- predict.cv.glmnet(lasso_price_cv, newx = xTrain, s = "lambda.min")
+pred_train <- predict(lasso_price_cv, newx = xTrain, s = "lambda.min")
 R2_lasso <- 1 - sum((pred_train - yTrain) ^ 2) /
   sum((mean(yTrain) - yTrain) ^ 2)
-pred_test <- predict.cv.glmnet(lasso_price_cv, newx = xTest, s = "lambda.min")
+#pred_test <- predict.cv.glmnet(lasso_price_cv, newx = xTest, s = "lambda.min")
+pred_test <- predict(lasso_price_cv, newx = xTest, s = "lambda.min")
 OSR2_lasso <- 1 - sum((pred_test - yTest) ^ 2) /
   sum((mean(yTrain) - yTest) ^ 2)
 
@@ -657,8 +661,8 @@ results
 mod_alpha_0 <- cv.glmnet(xTrain, yTrain, alpha = 0)
 mod_alpha_0.5 <- cv.glmnet(xTrain, yTrain, alpha = 0.5)
 
-pred_test_0 <- predict.cv.glmnet(mod_alpha_0, newx = xTest, s = "lambda.min")
-pred_test_0.5 <- predict.cv.glmnet(mod_alpha_0.5, newx = xTest, s = "lambda.min")
+pred_test_0 <- predict(mod_alpha_0, newx = xTest, s = "lambda.min")
+pred_test_0.5 <- predict(mod_alpha_0.5, newx = xTest, s = "lambda.min")
 OSR2_alpha_0 <- 1 - sum((pred_test_0 - yTest) ^ 2) /
   sum((mean(yTrain) - yTest) ^ 2)
 OSR2_alpha_0.5 <- 1 - sum((pred_test_0.5 - yTest) ^ 2) /
