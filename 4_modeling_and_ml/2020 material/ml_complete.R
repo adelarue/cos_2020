@@ -14,8 +14,9 @@
 # also load the `tidyverse` package. (Instead of `tidyverse`,
 # it also works to load `tidyr`, `dplyr`, and `ggplot2` as
 # we saw last session.)	
+setwd("~/Dropbox (MIT)/cos_2019/3_modeling_and_ml")
 library(tidyverse)
-listingsOrig <- read.csv("data/listings.csv", stringsAsFactors = FALSE)
+listingsOrig <- read.csv("../data/listings.csv", stringsAsFactors = FALSE)
 # Note that when we do a lot of data wrangling, sometimes it's nice
 # to keep a copy of the original data set so we don't have to read it in again.
 
@@ -944,16 +945,24 @@ library(randomForest)  # random forest regression
 # Let's start by training a random forest model for a classification task. We will perform the same task as we did using the simple CART model above, and compare the performance of Random Forest to CART
 rf <- randomForest(amenity_Elevator_in_Building ~ price + 
                      neighbourhood_cleansed,
-                   data = listingsGLMTrain, ntree = 5)
+                   data = listingsGLMTrain, ntree = 50)
+listingsGLMTrain$amenity_Elevator_in_Building=as.factor(listingsGLMTrain$amenity_Elevator_in_Building)
+listingsGLMTrain$neighbourhood_cleansed=as.factor(listingsGLMTrain$neighbourhood_cleansed)
+rf <- randomForest(amenity_Elevator_in_Building ~ price+neighbourhood_cleansed,
+                   data = listingsGLMTrain, ntree = 50)
 
 pred_train <- predict(rf)
 confusionMatrixTrain <- table(listingsGLMTrain$amenity_Elevator_in_Building,
-                              ifelse(pred_train > 0.5, "pred = 1", "pred = 0"))
+                              ifelse(pred_train==TRUE, "pred = 1", "pred = 0"))
 accTrain <- sum(diag(confusionMatrixTrain)) / nrow(listingsGLMTrain)
+
+listingsGLMTest$amenity_Elevator_in_Building=as.factor(listingsGLMTest$amenity_Elevator_in_Building)
+listingsGLMTest$neighbourhood_cleansed=as.factor(listingsGLMTest$neighbourhood_cleansed)
 pred_test <- predict(rf, newdata = listingsGLMTest)
 confusionMatrixTest <- table(listingsGLMTest$amenity_Elevator_in_Building,
-                             ifelse(pred_test > 0.5, "pred = 1", "pred = 0"))
+                             ifelse(pred_test==TRUE, "pred = 1", "pred = 0"))
 accTest <- sum(diag(confusionMatrixTest)) / nrow(listingsGLMTest)
+# Compare this to what we got using rpart, which had accTrain=0.8189944 and accTest=0.8031291. So random forest is doing a bit better! It would likely outperform rpart even more if more variables were used and the random forest model were properly tuned.
 
 # We will now use Random Forest for a regression task of predicting price from `accomodates`
 set.seed(123)
@@ -965,14 +974,33 @@ listingsTest <- subset(listings, spl == FALSE)
 lm1 <- lm(price ~ accommodates, data = listingsTrain)
 # Using Random Forest, we can write
 rf <- randomForest(price ~ accommodates,
-                   data = listingsTrain, ntree = 5)
+                   data = listingsTrain, ntree = 50)
 # We can compare the performance of the random forest model to the linear regression model by plotting the predictions
-listingsTest %>%
-  add_predictions(lm1) %>%	
-  add_predictions(rf)
+listingsTrain %>%
+  add_predictions(lm1,var="lm_pred") %>%	
+  add_predictions(rf,var="rf_pred") %>%
   ggplot(aes(x = accommodates)) +	
   geom_point(aes(y = price)) +	
-  geom_line(aes(y = pred), color = 'red')
+  geom_line(aes(y = lm_pred), color = 'red') +	
+  geom_line(aes(y = rf_pred), color = 'blue')
+listingsTrain %>%	
+  add_residuals(lm1, var = "lm_resid") %>%	
+  add_residuals(rf, var = "rf_resid") %>%	
+  group_by(as.factor(accommodates)) %>%	
+  ggplot() + 
+  geom_boxplot(aes(x = as.factor(accommodates), y = lm_resid),color="blue",alpha=.5) + 
+  geom_boxplot(aes(x = as.factor(accommodates), y = rf_resid),color="red",alpha=.5)
+# Now let's compute the R^2 values and compare them to our old models
+pred_train <- predict(rf)
+pred_test <- predict(rf, newdata = listingsTest)
+R2_rf <- 1 - sum((pred_train - listingsTrain$price) ^ 2) /
+  sum((mean(listingsTrain$price) - listingsTrain$price) ^ 2)
+OSR2_rf <- 1 - sum((pred_test - listingsTest$price) ^ 2) /
+  sum((mean(listingsTest$price) - listingsTest$price) ^ 2)
+
+# Let's save this into our "results" dataframe
+results = results %>%
+  rbind(list(model = "RF", R2 = R2_rf, OSR2 = OSR2_rf))
 
 #### Unsupervised Learning ####
 # Thus far, our machine learning task has been to predict labels,
