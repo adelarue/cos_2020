@@ -38,7 +38,7 @@ Before the first class, please complete the following tasks:
 
 ## Task 6: Begin considering project team and data set
 
-* There will be a sustained project over the first half of the seminar which will be done in teams and presented in Session 5.
+* There will be a sustained project over the first half of the seminar which will be done in teams and presented in Session 6.
 * Begin planning your team and the data set you will work with. Both decisions will be a part of the pre-assignment for Session 2.
 
-No results need to be submitted on Stellar for this pre-assignment.
+No results need to be submitted on Canvas for this pre-assignment.
