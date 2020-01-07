@@ -36,8 +36,19 @@ It may be helpful, however, to also keep handy the `S2_script_full.R` and `S2_ex
 
 (The `S2_master.Rmd` and `S2_master.html` files creating the [online session notes](https://philchodrow.github.io/cos_2017/2_wrangling_and_viz/S2_master.html) can be ignored.)
 
+## Pre-assignment 2: Download `R` and RStudio
 
-## Pre-assignment 2: Installing libraries
+We will be learning the `R` programming language for statistical computation. To interact with `R`, we will use RStudio to write and execute `R` commands. 
+
+* **Install `R`**: Navigate to https://cran.cnr.berkeley.edu/ and follow the instructions for your operating system. 
+* **Download RStudio**: Navigate to https://www.rstudio.com/products/rstudio/download/ and download RStudio Desktop with an Open Source License. 
+* **Test Your Installation**: Open RStudio and type 1+2 into the Console window, and type "Enter."
+* Later in the class we will require the most recent version of R (>= 3.3.1). If you already had R installed on your computer, you may have an earlier version. To check and update the R version, you can either follow the **Install `R`** instructions above or follow the steps in pre-lecture-assignment-1.R.
+* **Install The Tidyverse**: We will use the `tidyverse` package for data analysis and visualization. In your Console window, type `install.packages("tidyverse")` and wait for the download to complete (it may take some time). 
+
+
+
+## Pre-assignment 3: Installing libraries
 
 We will use three libraries for this session: `tidyr`, `dplyr`, and `ggplot2`. These three packages (any many more) can all be conveniently loaded using the metalibrary `tidyverse`. You should have previously installed `tidyverse` prior to Session 1. In case you haven't, do so now: 
 
@@ -69,7 +80,7 @@ which should produce a cloud of points centered around the origin.
 
 **Please upload a screenshot of these two outputs to Stellar (the table and the scatter plot).**
 
-## Pre-assignment 3: Reproducible Reporting with RMarkdown
+## Pre-assignment 4: Reproducible Reporting with RMarkdown
 
 [R Markdown](https://rmarkdown.rstudio.com/) is a framework for easily producing interactive reports, presentations, and dashboards in `R`. 
 
