@@ -1,0 +1,62 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Unknown </title></head><body>
+<h1 id="data-wrangling-and-visualization-with-r">Data Wrangling and Visualization with R</h1>
+<p>In the first part of the session, we will introduce basic techniques in data wrangling and visualization in R.  Specifically, we will cover some basic tools using out-of-the-box R commands, then introduce the powerful framework of the "tidyverse" (both in wrangling and visualizing data), and finally gain some understanding of the philosophy of this framework to set up deeper exploration of our data.  Throughout, we will be using a publicly available dataset of AirBnB listings. </p>
+<p>In the second part of the session, we will introduce RMarkdown.</p>
+<h2 id="preassignment-0-project-prep">Preassignment 0: Project Prep</h2>
+<p>By Thursday, we expect you to: </p>
+<ol>
+<li>Choose a project group. </li>
+<li>Choose a data set that interests you. It can be from your research or from an online venue like <a href="http://www.kaggle.com">Kaggle</a>. </li>
+</ol>
+<p>In addition to the below, we therefore expect you to turn in on Stellar the names of your project group and a brief description of your data set, including how you will access it and what makes it interesting. </p>
+<p>If you would like a partner but are having trouble finding one, please email the instructors and we will do our best to pair you up. </p>
+<h3 id="example-preassignment-0">Example Preassignment 0:</h3>
+<p>The following text gives an example of an acceptable submission for the project preparation. </p>
+<p><em>Team members: Andreea G.</em></p>
+<p><em>I will be looking at the Kaggle dataset on ski resorts, which is available to download at https://www.kaggle.com/beaubellamy/ski-resort. The dataset lists different ski resorts along with attributes such as country / region, altitude, size, difficulty of slopes, trails, snow reliability, facilities and equipment, average ticket price per age group, other services available. Here are two examples of questions I could investigate: 1. Pricing depending on the ski attributes of the resort, and 2. Number of resorts depending on the attributes of the region. One limitation of this dataset is the missing information of other touristic features of the given regions.</em></p>
+<h2 id="pre-assignment-1-keeping-current">Pre-assignment 1: Keeping current</h2>
+<p>To ensure that you have the most current versions of all files, please fire up a terminal, navigate to the directory into which you cloned the full set of materials for the course, and run <code>git pull</code>.  (Refer back to Session 1 if you're having trouble here.)</p>
+<p>Before class, it is recommended to skim through the <a href="https://philchodrow.github.io/cos_2017/2_wrangling_and_viz/S2_master.html">online session notes</a>.</p>
+<p>We recommend you follow along in class using the <code>S2_script.R</code> and <code>S2_exercises.R</code> files, which will allow you to live-code along with the session leader and work through un-solved exercises.  </p>
+<p>It may be helpful, however, to also keep handy the <code>S2_script_full.R</code> and <code>S2_exercises_solved.R</code> files which have all code and exercise answers filled in.</p>
+<p>(The <code>S2_master.Rmd</code> and <code>S2_master.html</code> files creating the <a href="https://philchodrow.github.io/cos_2017/2_wrangling_and_viz/S2_master.html">online session notes</a> can be ignored.)</p>
+<h2 id="pre-assignment-2-installing-libraries">Pre-assignment 2: Installing libraries</h2>
+<p>We will use three libraries for this session: <code>tidyr</code>, <code>dplyr</code>, and <code>ggplot2</code>. These three packages (any many more) can all be conveniently loaded using the metalibrary <code>tidyverse</code>. You should have previously installed <code>tidyverse</code> prior to Session 1. In case you haven't, do so now: </p>
+<p><code>install.packages('tidyverse')</code></p>
+<p>You should test that the libraries will load by then running
+<code>library(tidyverse)</code></p>
+<p>Then test that dplyr/tidyr work by executing the command:
+<code>data.frame(name=c('Ann', 'Bob'), number=c(3.141, 2.718)) %&gt;% gather(type, favorite, -name)</code>
+which should output something like this
+<code>name   type favorite
+    1  Ann number    3.141
+    2  Bob number    2.718</code></p>
+<p>Finally, test that ggplot works by executing the command
+<code>data.frame(x=rnorm(1000), y=rnorm(1000)) %&gt;% ggplot(aes(x,y)) + geom_point()</code>
+which should produce a cloud of points centered around the origin.</p>
+<p><strong>Please upload a screenshot of these two outputs to Stellar (the table and the scatter plot).</strong></p>
+<h2 id="pre-assignment-3-reproducible-reporting-with-rmarkdown">Pre-assignment 3: Reproducible Reporting with RMarkdown</h2>
+<p><a href="https://rmarkdown.rstudio.com/">R Markdown</a> is a framework for easily producing interactive reports, presentations, and dashboards in <code>R</code>. </p>
+<p>To prepare RStudio to work with R Markdown, run the following code in your RStudio console. </p>
+<p><code>{r}
+install.packages(c('knitr', 'rmarkdown', 'flexdashboard', 'leaflet'))</code></p>
+<p>To test that you have installed these packages successfully, please: </p>
+<ol>
+<li>Pull to ensure that you have the latest version of this repository. </li>
+<li>Open the file <code>preassignment.rmd</code> in RStudio. </li>
+<li>Click the "Knit" button at the top of the source editor, or press <code>cmd + shift + k</code> (<code>ctrl + shift + k</code> on Windows). The "Knit" button is the one circled in <a href="http://cinf401.artifice.cc/images/workflow-25.png">this image</a>.</li>
+<li>After a few moments, RStudio should pop up with a new window containing a dashboard that looks like <a href="https://philchodrow.github.io/mban_orientation/data_science_intro/preassignment/preassignment1.html">this</a>. If your dashboard matches the example, submit it on Stellar. If not, please email the instructors with the error message you received. </li>
+</ol>
+<h2 id="additional-resources">Additional Resources</h2>
+<p><code>dplyr</code> and <code>tidyr</code> are well-established packages within the <code>R</code> community, and there are many resources to use for reference and further learning. Some of our favorites are below. </p>
+<ul>
+<li>Tutorials by Hadley Wickham for <code>dplyr</code> <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html">basics</a>, <a href="https://cran.r-project.org/web/packages/dplyr/vignettes/window-functions.html">advanced grouped operations</a>, and <a href="https://cran.r-project.org/web/packages/dplyr/vignettes/databases.html">database interface</a>.</li>
+<li>Third-party <a href="http://www.dataschool.io/dplyr-tutorial-for-faster-data-manipulation-in-r/">tutorial</a> (including docs and a video) for using <code>dplyr</code></li>
+<li><a href="http://vita.had.co.nz/papers/tidy-data.pdf">Principles</a> and <a href="https://cran.r-project.org/web/packages/tidyr/vignettes/tidy-data.html">practice</a> of tidy data using <code>tidyr</code></li>
+<li>(Detailed) <a href="https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf?version=0.99.687&amp;mode=desktop">cheatsheet</a> for <code>dplyr</code> and <code>tidyr</code> </li>
+<li>A useful <a href="https://stat545-ubc.github.io/bit001_dplyr-cheatsheet.html">cheatsheet</a> for <code>dplyr</code> joins</li>
+<li><a href="http://stackoverflow.com/questions/21435339/data-table-vs-dplyr-can-one-do-something-well-the-other-cant-or-does-poorly">Comparative discussion</a> of <code>dplyr</code> and <code>data.table</code>, an alternative package with higher performance but more challenging syntax.  </li>
+</ul>
+<p>Some of the infinitude of visualization subjects we did not cover are: heatmaps and 2D histograms, statistical functions, plot insets, ...  And even within the Tidyverse, don't feel you need to limit yourself to <code>ggplot</code>.  Here's a good overview of some <a href="http://www.everydayanalytics.ca/2014/09/5-ways-to-do-2d-histograms-in-r.html">2d histogram techniques</a>, a discussion on <a href="http://stackoverflow.com/questions/5688082/ggplot2-overlay-histogram-with-density-curve">overlaying a normal curve over a histogram</a>, a workaround to fit multiple plots in <a href="http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/">one giant chart</a>. </p>
+<p>For other datasets and applications, one place to start is data hosting and competition websites like <a href="http://www.kaggle.com">Kaggle</a>, and there many areas like <a href="http://www.footballoutsiders.com">sports analytics</a>, <a href="http://www.electoral-vote.com/evp2016/Info/data.html">political forecasting</a>, <a href="https://t.co/3WCaDxGnJR">historical analysis</a>, and countless others that have <a href="http://http://www.pro-football-reference.com/">clean</a>, <a href="http://www.kdnuggets.com/datasets/index.html">open</a>, and <a href="https://www.kaggle.com/kaggle/hillary-clinton-emails">interesting</a> data just waiting for you to <code>read.csv</code>. </p>
+</body></html>
