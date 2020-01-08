@@ -13,7 +13,6 @@ We recommend you follow along in class using the `S2_script.R` and `S2_exercises
 
 It may be helpful, however, to also keep handy the `S2_script_full.R` and `S2_exercises_solved.R` files which have all code and exercise answers filled in.
 
-(The `S2_master.Rmd` and `S2_master.html` files creating the [online session notes](https://philchodrow.github.io/cos_2017/2_wrangling_and_viz/S2_master.html) can be ignored.)
 
 ## Pre-assignment 2: Download `R` and RStudio
 
