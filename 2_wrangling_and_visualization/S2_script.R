@@ -405,7 +405,7 @@ by.neighbor %>%
 by.neighbor %>%
   ggplot(aes(x=reorder(neighbourhood_cleansed, -med.price), y=med.price)) +
   geom_bar(fill='dark red', stat='identity') +
-  theme(axis.text.x=element_text(angle=60, hjust=1)) +
+  coord_flip() +
   labs(x='', y='Median price', title='Median daily price by neighborhood')
 
 #' 
