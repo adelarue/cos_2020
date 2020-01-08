@@ -2,27 +2,6 @@
 
 In the first part of the session, we will introduce basic techniques in data wrangling and visualization in R.  Specifically, we will cover some basic tools using out-of-the-box R commands, then introduce the powerful framework of the "tidyverse" (both in wrangling and visualizing data), and finally gain some understanding of the philosophy of this framework to set up deeper exploration of our data.  Throughout, we will be using a publicly available dataset of AirBnB listings. 
 
-In the second part of the session, we will introduce RMarkdown.
-
-## Preassignment 0: Project Prep
-
-By Thursday, we expect you to: 
-
-1. Choose a project group. 
-2. Choose a data set that interests you. It can be from your research or from an online venue like [Kaggle](http://www.kaggle.com). 
-
-In addition to the below, we therefore expect you to turn in on Stellar the names of your project group and a brief description of your data set, including how you will access it and what makes it interesting. 
-
-If you would like a partner but are having trouble finding one, please email the instructors and we will do our best to pair you up. 
-
-### Example Preassignment 0: 
-
-The following text gives an example of an acceptable submission for the project preparation. 
-
-*Team members: Andreea G.*
-
-*I will be looking at the Kaggle dataset on ski resorts, which is available to download at https://www.kaggle.com/beaubellamy/ski-resort. The dataset lists different ski resorts along with attributes such as country / region, altitude, size, difficulty of slopes, trails, snow reliability, facilities and equipment, average ticket price per age group, other services available. Here are two examples of questions I could investigate: 1. Pricing depending on the ski attributes of the resort, and 2. Number of resorts depending on the attributes of the region. One limitation of this dataset is the missing information of other touristic features of the given regions.*
-
 
 ## Pre-assignment 1: Keeping current
 
@@ -44,8 +23,6 @@ We will be learning the `R` programming language for statistical computation. To
 * **Download RStudio**: Navigate to https://www.rstudio.com/products/rstudio/download/ and download RStudio Desktop with an Open Source License. 
 * **Test Your Installation**: Open RStudio and type 1+2 into the Console window, and type "Enter."
 * Later in the class we will require the most recent version of R (>= 3.3.1). If you already had R installed on your computer, you may have an earlier version. To check and update the R version, you can either follow the **Install `R`** instructions above or follow the steps in pre-lecture-assignment-1.R.
-* **Install The Tidyverse**: We will use the `tidyverse` package for data analysis and visualization. In your Console window, type `install.packages("tidyverse")` and wait for the download to complete (it may take some time). 
-
 
 
 ## Pre-assignment 3: Installing libraries
@@ -78,24 +55,8 @@ data.frame(x=rnorm(1000), y=rnorm(1000)) %>% ggplot(aes(x,y)) + geom_point()
 ```
 which should produce a cloud of points centered around the origin.
 
-**Please upload a screenshot of these two outputs to Stellar (the table and the scatter plot).**
+**Please email a screenshot of these two outputs to Arthur (adelarue@mit.edu).**
 
-## Pre-assignment 4: Reproducible Reporting with RMarkdown
-
-[R Markdown](https://rmarkdown.rstudio.com/) is a framework for easily producing interactive reports, presentations, and dashboards in `R`. 
-
-To prepare RStudio to work with R Markdown, run the following code in your RStudio console. 
-
-```{r}
-install.packages(c('knitr', 'rmarkdown', 'flexdashboard', 'leaflet'))
-```
-
-To test that you have installed these packages successfully, please: 
-
-1. Pull to ensure that you have the latest version of this repository. 
-2. Open the file `preassignment.rmd` in RStudio. 
-3. Click the "Knit" button at the top of the source editor, or press `cmd + shift + k` (`ctrl + shift + k` on Windows). The "Knit" button is the one circled in [this image](http://cinf401.artifice.cc/images/workflow-25.png).
-4. After a few moments, RStudio should pop up with a new window containing a dashboard that looks like [this](https://philchodrow.github.io/mban_orientation/data_science_intro/preassignment/preassignment1.html). If your dashboard matches the example, submit it on Stellar. If not, please email the instructors with the error message you received. 
 
 ## Additional Resources
 
