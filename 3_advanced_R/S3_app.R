@@ -220,57 +220,9 @@ shinyApp(ui = ui, server = server)
 ###### EXERCISE 1 #####
 #######################
 
-# Add an interactive table that displays information about the listings
-# Tip: You will want to use renderDataTable(...) and dataTableOutput(...)
-
-ui <- fluidPage(
-  titlePanel("Boston Airbnb"),
-  
-  sidebarLayout(
-    sidebarPanel(
-      sliderInput("ndays", "Days", min=0, max=10, value=1, step=1),
-      sliderInput("npeople", "People", min=1, max=10, value=1, step=1),
-      dateInput("weekend_of", "Weekend of:", min=min(calendar $ date), 
-                max=max(calendar $ date), value=ymd(20200214)),
-      selectInput("neighbor", "Choose a neighborhood:",
-                  unique(listings$neighbourhood_cleansed)
-      )
-    ),
-    mainPanel(
-      plotOutput("distPlot"),
-      leafletOutput("map")
-    )
-  )
-)
-
-server <- function(input, output) {
-  toplot <- reactive({
-    get_availability_table(input $ ndays, input $ npeople) %>%
-      filter(stay_start == input $ weekend_of) %>%
-      filter(neighbourhood_cleansed == input $ neighbor)
-  })
-  
-  output$distPlot <- renderPlot({
-    toplot() %>% 
-      ggplot(aes(x = price_per_day_person)) + 
-      geom_histogram()
-  })
-
-  output $ map <- renderLeaflet({
-    leaflet() %>%
-      addTiles() %>% 
-      addCircleMarkers(~ longitude, ~ latitude, data=toplot(),
-                       popup=~ paste0(name, " $", price_per_day_person))
-  })
-  
-  fortable <- listings %>%
-      select(name, price, property_type, house_rules) 
-  
-}
-
-shinyApp(ui = ui, server = server)
-
-
+# Add an input that allows the user to filter on neighborhood 
+# Tip: use listings $ neighborhood_cleansed to see what neighborhoods are in the dataset
+# Tip: selectInput(...) will be useful
 
 #######################
 ###### EXERCISE 2 #####
@@ -279,47 +231,3 @@ shinyApp(ui = ui, server = server)
 # Add an interactive table that displays information about the listings
 # Tip: You will want to use renderDataTable(...) and dataTableOutput(...)
 
-ui <- fluidPage(
-  titlePanel("Boston Airbnb"),
-  
-  sidebarLayout(
-    sidebarPanel(
-      sliderInput("ndays", "Days", min=0, max=10, value=1, step=1),
-      sliderInput("npeople", "People", min=1, max=10, value=1, step=1),
-      dateInput("weekend_of", "Weekend of:", min=min(calendar $ date), 
-                max=max(calendar $ date), value=ymd(20200214))
-    ),
-    mainPanel(
-      dataTableOutput("listingsTable"),
-      plotOutput("distPlot"),
-      leafletOutput("map")
-    )
-  )
-)
-
-server <- function(input, output) {
-  toplot <- reactive({
-    get_availability_table(input $ ndays, input $ npeople) %>%
-      filter(stay_start == input $ weekend_of)
-  })
-  
-  output$distPlot <- renderPlot({
-    toplot() %>% 
-      ggplot(aes(x = price_per_day_person)) + 
-      geom_histogram()
-  })
-  
-  output $ map <- renderLeaflet({
-    leaflet() %>%
-      addTiles() %>% 
-      addCircleMarkers(~ longitude, ~ latitude, data=toplot(),
-                       popup=~ paste0(name, " $", price_per_day_person))
-  })
-  
-  fortable <- listings %>%
-    select(name, price, property_type, house_rules) 
-  
-  output $ listingsTable <- renderDataTable(fortable)
-}
-
-shinyApp(ui = ui, server = server)
