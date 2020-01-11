@@ -9,78 +9,68 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r libraries, message=FALSE}
 library(modelr)
-library(quantreg)
 library(glmnet)
 library(tidyverse)
 ```
 
 
-## The Data Science Process
+## This Session
 
-![The Data Science Process](data-science-process.eps)
+Now that you've had some experience using R for data wrangling and presentation, we're going to look at **model selection** and **model evaluation** in this session.
 
-Now that you've had some experience using R for Steps 2, 3, and 6, we're going to focus on Steps 4 and 5 in this session.
+Model selection means choosing an algorithm which acts on the data available to us, and produces a solution to the task we aim to solve.
 
-Model Selection (Step 4) means choosing an algorithm which acts on the data available to us, and produces a solution to the task defined in Step 1.
+Model evaluation means assessing *how well* the solution we obtain solves the task.
 
-Model Evaluation (Step 5) means assessing how well the solution obtained in Step 4 solves the task in Step 1.
-
-We're going to get some practice following these steps for three common classes of task in machine learning:
+We're going to get some practice for three common types of task in machine learning:
 
 1. Regression (supervised learning)
 2. Classification (supervised learning)
 3. Clustering (unsupervised learning)
 
-It's important to note that these steps are never followed linearly in practice, but instead used for iteration. We'll try to get a sense of what this looks like in this session.
+It's important to note that model selection and evaluation are not followed sequentially in practice, but instead iterated over. We'll try to get a sense of what this looks like in the session.
 
 
 ## Regression
 
-We're going to start by solving a regression problem. But first, what is a regression problem?
+We're going to start by solving a regression problem.
 
 **Inputs**
 
 Regression is a supervised learning problem, which means that we have access to a dataset $\mathcal{D} = \{ (x_i, y_i) \}_{i = 1}^{n}$ where each $x_i \in \mathbb{R}^d$ and each $y_i \in \mathbb{R}$.
 
-Note that for regression, the output is *continuous*.
+Note that for regression, the output, $y$, is *continuous*.
 
 **Aim**
 
-The aim of a regression task is to find a function $h: \mathbb{R}^d \to \mathbb{R}$ which allows us to find an accurate prediction of the output, $y$, for any given input, $x$. Exactly what we mean by *accuracy* will be discussed when we talk about model evaluation.
+The aim of a regression task is to find a function $h: \mathbb{R}^d \to \mathbb{R}$ which allows us to compute an accurate prediction of the output, $y$, for any given input, $x$. These new $x$ and $y$ are *unseen*: that is, we assume they are identically distributed relative to the points in $\mathcal{D}$, but independent.
 
-The way we approach the problem of finding $h$ is by selecting a parameterised class of models, and solving an optimisation problem to find the best model within this class. We usually repeat this process for several model classes.
+Exactly what we mean by *accuracy* will be discussed when we talk about model evaluation.
+
+The way we approach the problem of finding $h$ is by selecting a parameterised class of models, and solving an optimization problem to find the best model within this class according to a *loss function*. We usually repeat this process for several model classes.
 
 
 ### Defining our Regression Task
 
 We're going to use the Boston Airbnb dataset, where each entry is a property listing, and aim to use the input variables available to us in order to predict the price of a listing.
 
-Note here that we haven't specified exactly which variables will be used to define each $x_i$. This is a choice which is part of the modeling process.
+Note here that we haven't specified exactly which variables in the dataset will be used to define each $x_i$. This is a choice which is part of the modeling process, and we will iterate on it.
 
-
-### Data Wrangling (TODO: decide whether to keep this in, or just supply a clean dataset)
+First, we load a processed version of the dataset:
 
 ```{r}
-# Load.
-listingsOrig <- read.csv("../../data/listings.csv", stringsAsFactors = FALSE)
+source("process_listings.R")
+listings <- process_listings("../../data/listings.csv")
+```
 
-# Process.
-listings <- listingsOrig %>%
-  mutate(price = parse_number(price)) %>%  # Get numbers from price strings.
-  filter(accommodates <= 10, price <= 1000) %>%  # Remove outliers.
-  filter(property_type %in%
-           c("Apartment", "House", "Bed & Breakfast", "Condominium", "Loft", "Townhouse"),	
-         !(neighbourhood_cleansed %in%
-             c("Leather District", "Longwood Medical Area"))) %>%  # Get house types and neighbourhoods.
-  select_if(~sum(is.na(.)) < 0.9 * nrow(listingsOrig)) %>%  # Choose only mainly complete columns.
-  mutate_if(is.integer, as.numeric) %>%  # Convert integer columns to numeric.
-  mutate_all(~coalesce(., median(., na.rm = TRUE)))  # Replace NA values with column medians.
+```{r}
+head(listings)
 ```
 
 
 ### Ordinary Least Squares
 
-The first class of models we're going to try is linear models. This means we hypothesis that the output, $y$, can be described using a linear combination of the inputs, $x$: $h(x) = w^{\intercal} x$.
+The first class of models we're going to try is linear models. This means we hypothesise that the output, $y$, can be described using a linear combination of the inputs, $x$: $h(x) = w^{\intercal} x$.
 
 Ordinary Least Squares (OLS) finds the best fitting linear model according to the least squares loss function:
 
@@ -90,18 +80,19 @@ where $e_{i}^{\intercal} X = x_{i}^{\intercal}$, and $e_{i}^{\intercal} Y = y_i$
 
 $\min_w \: \frac{1}{n} \sum_{i = 1}^{n} (w^{\intercal} x_i - y_i)^2$
 
-We won't talk about the details behind solving this problem, but it can be written in closed form.
+We won't talk about the details behind solving this problem, but the optimal $w^{*}$ can be written in closed form.
 
-**Exercise**
+**Question**: What are the tunable parameters (hyperparameters) for the class of OLS models?
 
-What are the tunable parameters for the class of OLS models?
+**Answer**: There aren't really any. If we restrict ourselves to OLS, then the only choice we need to make is which variables to include as inputs.
 
-...
 
-Now, we need to choose exactly which inputs will be used for fitting the model. Which inputs might be predictive of price? Let's have a look at all the variable names:
+#### Fitting an OLS Model 
+
+Now, we need to choose exactly which inputs will be used for fitting the model. Which inputs might be predictive of price? Recall the column names:
 
 ```{r}
-sort(names(listings))
+names(listings)
 ```
 
 For a very simple model, let's just choose `accommodates` as the only input. To fit this model we use the base R function `lm`:
@@ -112,9 +103,9 @@ ols_model <- lm(price ~ accommodates, data = listings)
 
 What's happening here? The first argument makes use of R's formula interface. In words, we want the output `price` to be explained by the input `accommodates`.
 
-The second (named) argument supplies the data we're using to build the model. This is where R looks for the names (`price` and `accommodates`) contained in the formula.
+The second (named) argument supplies the data we're using to build the model -- this is where R looks for the names (`price` and `accommodates`) contained in the formula. We will see some more complicated formulae later in the session.
 
-Let's check out the `ols_model` object. It's a list of a bunch of relevant information generated by the function call, and we can use `$` to view different elements:
+Let's check out the `ols_model` object. It's a list of relevant information generated by the function call, and we can use `$` to view different elements:
 
 ```{r}
 names(ols_model)
@@ -126,9 +117,9 @@ The function `summary` is overloaded for many different objects and often gives 
 summary(ols_model)
 ```
 
-First, let's look at the 'coefficients' section. Notice that R automatically adds an intercept term. In the 'estimate' column, we see that the point estimates for the linear model here say that the price is \$55.20 plus \$37.79 for every person accommodated. Notice the '***' symbols at the end of the '(Intercept)' and 'accommodates' rows indicate that according to a statistical t-test, both coefficients are significantly different from 0.
+Let's look at the 'coefficients' section. In the 'estimate' column, we see that the point estimates for the model coefficients say that the price is \$55.20 plus \$37.79 for every person accommodated. Notice the star symbols at the end of the '(Intercept)' and 'accommodates' rows indicate that according to a statistical t-test, both coefficients are significantly different from 0.
 
-As another check on the quality of the model, let's plot the fitted line. There are some nifty functions in the `modelr` package that make interacting with models easy within the `tidyverse` setting. We'll use `modelr::add_predictions()` here:
+To visualise the model, let's plot the fitted line. There are some nifty functions in the `modelr` package that make interacting with models easy within the `tidyverse` setting. We'll use `modelr::add_predictions`:
 
 ```{r}
 listings %>%	
@@ -139,9 +130,11 @@ listings %>%
   labs(title = "OLS Model Fit")
 ```
 
-Nice. We can also remove the linear trend and check the residual uncertainty, which we'll do here using `modelr::add_residuals()`.
+Nice. We can also remove the linear trend and check the residuals directly, which we'll do here using `modelr::add_residuals`.
 
-This is helpful to check whether the residuals looks like random noise rather than an unidentified trend (which would indicate that a linear model is not a good hypothesis for the relationship).
+This is helpful to check whether the residuals looks like random noise rather than an unidentified trend (which would indicate that a linear model is not a good hypothesis for the relationship):
+
+**Exercise**: Using `modelr::add_residuals`, produce a scatter plot which shows the model residuals.
 
 ```{r}
 listings %>%
@@ -151,314 +144,332 @@ listings %>%
   labs(title = "OLS Model Residuals")
 ```
 
-Due to the closely spaced values, box plots might tell a better story here:
+Due to the closely spaced values, box plots might tell a better story:
+
+**Exercise**: Using `modelr::add_residuals`, produce a box plot of model residuals for each accommodation size.
 
 ```{r}
 listings %>%	
-  add_residuals(ols_model, var = "resid") %>%	
-  group_by(as.factor(accommodates)) %>%	
+  add_residuals(ols_model, var = "resid") %>%
   ggplot(aes(x = as.factor(accommodates), y = resid)) + 
   geom_boxplot() +
   labs(title = "OLS Model Residual Boxplots")
 ```
 
-The residuals seem relatively centered around zero, though there does appear to be some right skew. 9 and 10-person accommodation is also less centered. Perhaps the model doesn't apply so well here -- why might that be?
+**Question**: What do these box plots tell us about the model?
+
+**Answer**: Although the residuals seem relatively centered around zero, there does appear to be some right skew. Also, the 9 and 10-person accommodation residuals look less centered. Perhaps the model doesn't apply so well here.
 
 
-### Evaluation and Iteration
+### Evaluation
+
+Now we're going to look at two measures of accuracy for regression models -- in other words, how well a model explains a dataset.
+
+The first is the mean squared error (MSE), which is simply computed as the mean of the squared residuals. Recall that the residuals are stored in the `ols_model` object:
+
+```{r}
+mse <- mean(ols_model$residuals ^ 2)
+mse
+```
+
+`modelr::rmse` also gives us an easy way of calculating (root) MSE from a model applied to a dataset:
+
+```{r}
+rmse(ols_model, listings) ^ 2
+```
+
+Clearly this measure is highly affected by the scale of the data. We can also use the 'R squared' coefficient as a more interpretable measure of accuracy, since it falls between 0 and 1. It is the *proportion of variance in the data which is explained by the model*, and is calculated as:
+
+```{r}
+rsq <- 1 - mse / mean((listings$price - mean(listings$price)) ^ 2)
+rsq
+```
+
+The `rmodel::rsquare` function also calculates it for us:
+
+```{r}
+rsquare(ols_model, listings)
+```
+
+The R squared value is what we will use to evaluate the performance of our models in this session. But, it's important to note that this is definitely not the only choice we could have made!
+
+**Question**: What is the relationship between the loss function, and the measure of accuracy used to evaluate a model? How do we know which is the best choice for each?
+
+**Answer**: The loss function is used to fit a model, and the measure of accuracy is used to evaluate how well it explains the data. The measure of accuracy usually comes from the task we aim to solve, and the loss function is often something that we will play around with until we find a good model. 
+
 
 #### Training, Validation and Testing Splits
 
-Recall that our ultimate goal in this supervised learning task is to be able to predict price ($y$) from an unseen set of inputs ($x$, which we are still playing around with).
+Recall that our ultimate goal in this supervised learning task is to be able to predict price ($y$) from an *unseen* set of inputs ($x$, although we are still playing around with the input variables which define it).
 
-When we were learning the OLS formulation, and how to fit the model, we used the entire dataset. Simply taking the mean squared error on this dataset as a measure of performance is clearly not fair -- we want the model to generalise to unseen data.
+When building the OLS model, we used the entire dataset. Simply taking the R squared value on this dataset as a measure of performance is clearly not fair -- since we want the model to generalise to unseen data.
 
-Put another way: an obvious best solution on the entire dataset is to use a nearest neighbours classifier...
+To address this problem, we often split the dataset into three different chunks:
 
-To address this problem, we split the data into three different chunks:
+1. **Training data**: the data we build our models on.
+2. **Validation data**: the data we tune hyperparameters on.
+3. **Testing data**: the data we use to obtain a final estimate of performance.
 
-- Training data: the data we build our models on.
-- Validation data: the data we tune hyperparameters on.
-- Testing data: the data we obtain a final estimate of performance on.
+The validation set is like an 'intermediate' estimate of performance. If we didn't use the validation set for this purpose, the only way of selecting the best model from a model class would be to look at its performance on the training set or the testing set.
 
-Note that the validation set is like an 'intermediate' estimate of performance, which we use to tune parameters when building models within a specific model class. If we didn't use the validation set for this purpose, the only ways of selecting the best model from a class would be to look at it's performance on the training set (not good, for previous reasons) or the testing set (also not good, for previous reasons).
-
-So, given these data splits, the process we follow *within a model class* is:
-
-1. Build a collection of models on training set.
-2. Evaluate performance of models on validation set.
-3. Choose best model from within class, and obtain estimate of its performance by using the testing set.
-4. Choose best model across all model classes according to testing set.
+`modelr::resample_partition` provides an easy way of creating these data partitions:
 
 ```{r}
+set.seed(0)
 part <- resample_partition(listings, c(train = .6, val = .2, test = .2))
 ```
 
-```{r}
-part$train 
-```
+This produces a list of three `resample` objects:
 
 ```{r}
-part$train %>% as_tibble()
+names(part)
 ```
 
-There are many different ways we can evaluate the performance of a model on the testing set. The two we will use are the mean squared error, and the R^2 coefficient.
-
-Describe, example calculation...
-
-### Iteration
-
-We have glossed over the precise choice of variables to use, so let's try a few different combinations. This sounds like a job for a loop, but since we're in the dplyr framework it's better to think of writing a function where the loop variables are the input.
-
-We'll write a function that accepts a training/validation/testing partition object, and formula. Note that the lm function also works with a string supplied for the formula:
+In order to save space, these are just pointers to rows in our data -- meaning we lose some of the conveniences of working with tibbles. Since our dataset is relatively small, we can just convert them back to tibbles:
 
 ```{r}
-lm("price ~ accommodates", data = listings)
+part_tib <- part %>% map(as_tibble)
 ```
+
+
+### Model Iteration
+
+Now that we're equipped to build models and evaluate their performance, let's start iterating to find better models.
+
+We've glossed over the precise choice of variables to use in order to explain price, so let's try a few different combinations. This sounds like a job for a loop, but since we're working with `dplyr` it's better to think of writing functions.
+
+First, note that the `lm` function also works with a string supplied for the formula:
 
 ```{r}
-calc_mse <- function(model, data) {
-  
-  resids <- data %>%
-    add_residuals(model) %>%
-    pull(resid)
-  
-  return(mean(resids ^ 2))
-}
+lm("price ~ accommodates", data = part_tib$train)
 ```
 
-Now a function to take an individual formula and dataset split, and return performance metrics (including the stored model itself).
+Now we'll write a function that accepts a formula and training/validation/testing partitioning, and returns the R squared value on each partition, the model formula, and the model itself:
+
+**Exercise**: Write this function.
 
 ```{r}
 eval_ols <- function(form, part) {
-  ols <- lm(form, data = part$train)
+  ols_model <- lm(form, data = part$train)
   
-  result <- tibble(model = list(ols),
+  result <- tibble(model = list(ols_model),
                    formula = form,
-                   train_mse = calc_mse(ols, part$train %>% as_tibble()),
-                   val_mse = calc_mse(ols, part$val %>% as_tibble()),
-                   test_mse = calc_mse(ols, part$test %>% as_tibble()))
+                   train_rsq = rsquare(ols_model, part$train),
+                   val_rsq = rsquare(ols_model, part$val),
+                   test_rsq = rsquare(ols_model, part$test))
   
   return(result)
 }
 ```
 
-Now that we have the functions in place, let's create list of formulae to try.
+Now let's create a list of formulae to try:
 
 ```{r}
 forms <- list(
   "price ~ accommodates",
-  "price ~ accommodates + review_scores_rating"
+  "price ~ accommodates + review_scores_rating",
+  big_formula <- "price ~ accommodates + review_scores_rating + property_type + neighbourhood_cleansed + accommodates * room_type"
 )
 ```
 
-And then use the tidyverse to build a whole series of models together.
+**Question**: Does the third formula still correspond to a linear model?
+
+**Answer**: We have created some nonlinear features, so not technically. But we still fit a 'linear' model to these new features -- think of it as augmenting the input vector, $x$, with new features, and then fitting a pure linear model.
+
+And now we'll build and evaluate a series of OLS models together, one for each formula:
+
+**Exercise**: Using the function previously defined, build and evaluate the models.
 
 ```{r}
 ols_models <- forms %>%
-  map(~eval_ols(., part)) %>%
+  map(~eval_ols(., part_tib)) %>%
   bind_rows()
 ols_models
 ```
 
-Adding amenities...
+**Question**: Can we say anything definitive about these results?
+
+**Answer**: We can be relatively confident that the largest model is the best performing. We also see that the testing performance is significantly worse than the training performance. Usually this indicates overfitting, but then why is the validation performance so similar to the training performance? This is most likely due to our performance estimates being sensitive to the randomness used to select the training/validation/testing partitions. We can check this by changing the random seed defined earlier.
 
 
-### Median Regression
+### Regularization
 
-Since we're dealing with data on price, we expect that there will be high outliers. While least-squares regression is reliable in many settings, it has the property  that the estimates it generates depend quite a bit on the outliers.
+In some situations, overfitting is more obvious -- and since it is a common problem when building models, we will now look at how it can be addressed.
 
-One alternative, median regression, minimizes *absolute* error rather than squared error:
+Regularization is a tool which helps us to avoid overfitting by penalising model complexity. Mathematically, we add a term to the loss function in the optimisation problem to be solved. Recall that the OLS formulation we've worked with is:
 
-$ \min_w \sum_{i = 1}^{n} |x_i^\intercal w - y_i|$
+$\min_w \: \frac{1}{n} \sum_{i = 1}^{n} (w^\intercal x_i - y_i)^2$
 
-where $X = [x_i^\intercal \quad 1]$ and $Y = [y_i]$.
+With a regularization term, this becomes:
 
-This has the effect of regressing on the median rather than the mean, and is more robust to outliers. In R, the `quantreg` package implements this approach.
+$\min_w \: \frac{1}{n} \sum_{i = 1}^{n} (w^\intercal x_i - y_i)^2 + \lambda \Omega(w)$
 
-For this exercise, install the quantreg package, and compare the behavior of the median regression fit (using the `rq()`) function) to the least squares fit from `lm()` on the original listings data set given below which includes all the price outliers.
-
-Modify the function we wrote about to 
-
-```{r}
-eval_med <- function(form, part) {
-  ols <- lm(form, data = part$train)
-  
-  result <- tibble(model = list(ols),
-                   formula = form,
-                   train_mse = calc_mse(ols, part$train %>% as_tibble()),
-                   val_mse = calc_mse(ols, part$val %>% as_tibble()),
-                   test_mse = calc_mse(ols, part$test %>% as_tibble()))
-  
-  return(result)
-}
-```
-
-```{r}
-ols <- lm(price ~ accommodates, data = part$train %>% as_tibble())
-med <- rq(price ~ accommodates, data = part$train %>% as_tibble())
-summary(ols)
-summary(med)
-
-part$test %>%
-  as_tibble() %>%
-  gather_predictions(ols, med) %>%
-  ggplot(aes(x = accommodates)) +	
-  geom_point(aes(y = price)) +	
-  geom_line(aes(y = pred, color = model))
-```
-
-Need to use heaps of variables, obtain overfitting and lead into regularisation...
-
-
-### Regularisation
-
-Regularisation helps to avoid overfitting by penalising model complexity. Mathematically, we add a term to the optimisation problem that is solved when fitting a model. Recall that the OLS we've worked with is:
-
-$\min_w \sum_{i = 1}^{n} (x_i^\intercal w - y_i)^2$
-
-With a regularisation term, this becomes:
-
-$\min_w \sum_{i = 1}^{n} (x_i^\intercal w - y_i)^2 + \lambda \Omega(w)$
-
-$\Omega(w)$ is a penality on the complexity of the model. Two common choices for $\Omega(w)$ are:
+$\Omega(w)$ is a penalty on the complexity of the model. Two common choices for $\Omega(w)$ are:
 
 1. $\Omega(w) = ||w||_2^2$: this is ridge regression.
-2. $\Omega(w) = ||w||_1$: this is LASSO.
+2. $\Omega(w) = ||w||_1$: this is LASSO regression.
 
-There are two types of flexibility within this framework:
+Both types of regression shrink the elements of the optimal $w^*$ vector towards 0 -- but in different ways. We will focus on LASSO -- which tends to shrink the coefficients so that some are equal to 0. This is nice because it helps us interpret the model by making it *sparser*.
 
-- Choice of norm, a structural decision.
-- Choice of $\lambda$, a parametric decision.	
+We'll use the `glmnet` package. This package illustrates some of the less desirable aspects of R, since it doesn't work very elegantly with the `tidyverse` (it uses matrix representations of the data rather than data frame representations).
 
-Both types of regression shrink all the elements of the unconstrained $w$ vector towards zero, some more than others in a special way. LASSO shrinks the coefficients so that some are equal to zero. This feature is nice because it helps us interpret the model by getting rid of the effects of many of the variables.	
+Let's check out the function `glmnet::glmnet`:
 
-For LASSO, we'll use the `glmnet` package. This package illustrates some of the less desirable aspects of the R universe, since it doesn't work very elegantly with the `tidyverse` (it uses matrix representations of the data rather than data frame representations).
-
-Let's check out the function `glmnet()`. We can see the documentation from the command line using `?glmnet`.	
 ```{r}
-library(glmnet)
 ?glmnet
 ```
 
-Notice that `glmnet()` doesn't communicate with the data via formulas. Instead, it wants a matrix of predictor variables and a vector of values for the variable we're trying to predict, including all the categorical variables that R automatically expanded into indicator variables. Fortunately, R has a `model.matrix()` function which takes a data frame and gets it into the right form for `glmnet()` and other functions with this type of input.	
+Notice that `glmnet` doesn't use formulas. Instead, it accepts a matrix of input variables and a vector of outputs, including all the categorical variables that R automatically expands into indicator variables.
 
-First, we need to convert the data to a matrix for X and a vector for Y. We'll use the big_formula that we made previously for our linear regression, but with the dependent variable removed.
+Fortunately, R has the `model.matrix` function which takes a data frame and processes it for `glmnet` and other functions with this type of input.	
+
+We'll use the `big_formula` that we made previously for our linear regression, but we have to remove the dependent variable. Let's first see how the model fitting process works with our entire dataset:
 
 ```{r}
-model_formula <- as.formula(gsub("price", "", paste(big_formula)))
-x <- model.matrix(model_formula, data = listingsBig)
-y <- as.vector(listingsBig$price)
+model_formula <- as.formula(gsub("price", "", big_formula))
+X <- model.matrix(model_formula, data = listings)
+Y <- as.vector(listings$price)
 ```
 
-Next, split into training/testing sets
+The X matrix that's been produced looks like:
 
 ```{r}
-set.seed(123)
-spl <- sample.split(y, SplitRatio = 0.7)
-xTrain <- x[spl, ]
-xTest <- x[!spl, ]
-yTrain <- y[spl]
-yTest <- y[!spl]
+head(X)
 ```
 
-Finally, let's fit a our first LASSO model. There's a way to specify lambda manually, but let's just accept the default for now and see what we get.
+Let's fit our first LASSO model. There is a way to specify lambda manually, but let's just accept the default for now and see what happens.
 
 ```{r}
-lasso_price <- glmnet(xTrain, yTrain)
+lasso_model <- glmnet(X, Y)
 ```
 
 This time the `summary()` function isn't quite as useful:
 
 ```{r}
-summary(lasso_price)
+summary(lasso_model)
 ```
 
-It does give us some info, though. Notice that "lambda" is a vector of length 86. The `glmnet()` function has defined 86 different values of lambda and found the corresponding optimal beta vector for each one! We have 86 different models here.
+It does give us some information, though. Notice that `lambda` is a vector of length 76. The `glmnet` function has defined 76 different values of lambda and found the corresponding optimal weight vector (here called `beta`) for each one. We have 76 different models.
 
-Let's look at some of the coefficients for the different models. We'll start with one where lambda is really high:
+**Question**: As a sanity check: where does the length of `beta`, 2584, come from?
+
+**Answer**: We have 76 different models, and the dimension of the `X` matrix is (3501 by 34). Note that 76 x 34 = 2584.
+
+Let's look at some of the coefficients for the different models. We'll start with one where lambda is really high, and check how many coefficients are nonzero:
+
 ```{r}
-lasso_price$lambda[1]
-nnzero(lasso_price$beta[, 1]) # How many coefficients are nonzero?	
+lasso_model$lambda[1]
+nnzero(lasso_model$beta[, 1])
 ```
 
-Here the penalty on the size of the coefficients is so high that R sets them all to zero. Moving to some smaller lambdas:
+Here the penalty on the size of the coefficients is so high that R sets them all to zero. Moving to smaller lambda:
 
 ```{r}
-lasso_price$lambda[10]	
-lasso_price$beta[which(lasso_price$beta[, 10] != 0), 10]	
+lasso_model$lambda[10]
+lasso_model$beta[which(lasso_model$beta[, 10] != 0), 10]	
+```
 
-lasso_price$lambda[20]	
-lasso_price$beta[which(lasso_price$beta[, 20] != 0), 20]
+```{r}
+lasso_model$lambda[20]
+lasso_model$beta[which(lasso_model$beta[, 20] != 0), 20]
 ```
 
 And, to see the whole path of lambdas:
 
 ```{r}
-plot(lasso_price, xvar = "lambda")
+plot(lasso_model, xvar = "lambda")
 ```
 
-Here, each line is one variable. The plot is quite messy with so many variables, but it gives us the idea. As lambda shrinks, the model adds more and more nonzero coefficients.	
+Here, each line is one variable. The plot is quite messy with so many variables, but it gives us the idea. As lambda grows, the size of the weight vector `beta` is penalised more, and so more coefficients are set to zero.	
 
 
-## Cross-Validation
+### Cross-Validation
 
-How do we choose which of the 86 models to use? Or in other words, how do we "tune" the $\lambda$ parameter? We'll use a similar idea to the training-test set split called cross-validation.	
+Now that we can fit LASSO models to a dataset, we need a way of selecting the one with the best parameter for our task.
 
-The idea behind cross-validation is this: what if we trained our family of models (in this case 86) on only some of the training data and left out some other data points? Then we could use those other data points to figure out which of the lambdas works best out-of-sample. So we'd have a training set for training all the models, a validation set for choosing the best one, and a test set to evaluate performance once we've settled on a model.	
+**Question**: How would we do this using the training/validation/testing splits we have previously defined?
 
-There's just one other trick: since taking more samples reduces noise, could we somehow take more validation set samples? Here's where *cross*-validation comes in.
+**Answer**: Fit models on the training set, varying lambda. Then obtain an estimate of performance for each model on the validation set, and choose the best. Obtain a final estimate of performance for this model on the testing set.
 
-We divide the training data into groups called *folds*, and for each fold repeat the train-validate procedure on the remaining training data and use the current fold as a validation set. We then average the performance of each model on each fold and pick the best one.	
+Here, because the `glmnet` library makes it easy, we're going to use a similar technique called cross-validation. Generally, we only consider this necessary when worried we have too little training data to obtain an accurate estimate of validation performance.
 
-This is a very common *resampling* method that applies in lots and lots of settings. Lucky for us the glmnet package has a very handy function called `cv.glmnet()` which does the entire process automatically. Let's look at the function arguments using `?cv.glmnet`.	
+The idea behind cross-validation is: repeating the training/validation process multiple times provides us with several estimates of validation performance. Taking the average of these hopefully gives us an estimate which is less affected by noise.
 
-The relevant arguments for us right now are	
-* x, the matrix of predictors	
-* y, the response variable	
-* nfolds, the number of ways to split the training set (defaults to 10)
-* type.measure, the metric of prediction quality. It defaults to mean squared error, the square of RMSE, for linear regression	
+To cross-validate, we start with only two partitions of the dataset:
 
-Let's do the cross-validation:
+1. Combined training/validation set: the data that we repeatedly train and validate on.
+2. Testing set: the data we obtain our final performance estimate on.
+
+But, how do we train and validate?
+
+- First, select a number of *folds*.
+- Then divide the training/validation data into this number of equal-sized partitions.
+- For each fold, repeat the training/validation procedure. The fold is the validation data, and the other folds are training data.
+- Average the performance of each model across folds and pick the hyperparameters which produce the best model.
+- Fit a model on the entire training set using the selected values of hyperparameters.
+
+Since `glmnet` makes use of matrices, let's convert the same training/validation/testing splits as before into matrix form:
+
+**Exercise**: Create `part_mat`, so that we can access, for example, `part_mat$train$X`.
 
 ```{r}
-lasso_price_cv <- cv.glmnet(xTrain, yTrain)
-summary(lasso_price_cv) # What does the model object look like?	
+make_matrices <- function(df, input_formula, output_name){
+  X <- model.matrix(input_formula, data = df)
+  Y <- df %>% pull(output_name)
+  return(list(X = X, Y = Y))
+}
+
+part_merge <- list(train = bind_rows(part_tib$train, part_tib$val), test = part_tib$test)
+part_mat <- part_merge %>% map(~make_matrices(., model_formula, "price"))
 ```
 
-Notice the "lambda.min". This is the best lambda as determined by the cross validation. "lambda.1se" is the largest lambda such that the "error is within 1 standard error of the minimum."	
-
-There's another automatic plotting function for `cv.glmnet()` which shows the error for each model:	
+The `glmnet` package has a very handy function called `glmnet::cv.glmnet` which performs cross-validation automatically. Let's look at the function arguments:
 
 ```{r}
-plot(lasso_price_cv)
+?cv.glmnet
 ```
 
-The first vertical dotted line shows `lambda.min`, and the second is `lambda.1se`. The figure illustrates that we cross-validate to find the "sweet spot" where there's not too much bias (high lambda) and not too much noise (low lambda). The left-hand side of this graph is flatter than we'd sometimes see, meaning that the unpenalized model may not be too bad. However, increasing lambda increases interpretability at close to no loss in prediction accuracy!	
+Not too different to before. Note that the default number of folds is 10, which is fine for our purposes. Also note that the default performance metric is mean squared error, which is also fine (since it is closely related to the R squared measure). Let's do the cross-validation:
 
-Let's again compare training and test error. Because we are using glmnet we need to use the specialized `predict.cv.glmnet()` function:
+```{r}
+lasso_model_cv <- cv.glmnet(part_mat$train$X, part_mat$train$Y)
+```
+
+And check what the model object looks like:
+
+```{r}
+summary(lasso_model_cv)
+```
+
+Notice the `lambda.min` attribute. This is the best lambda determined by the cross-validation. `lambda.1se` is the largest lambda such that the *error is within 1 standard error of the minimum*.
+
+The standard `plot` function works nicely with cross-validated `glmnet` models to show the error for each model:
+
+```{r}
+plot(lasso_model_cv)
+```
+
+The first vertical dotted line shows `lambda.min`, and the second is `lambda.1se`. The figure illustrates how we can find the 'sweet spot' by varying lambda. The left-hand side of this graph is flatter than we'd sometimes see, meaning that the unpenalized model may not be too bad -- however, increasing lambda increases interpretability at close to no loss in prediction accuracy!
+
+We still haven't obtained an error measurement on the testing data, which will allow us to compare our best regularised model with the unregularised one. Because we're using `glmnet`, we need to use the `predict` function rather than `modelr::add_predictions`:
 
 ```{r}
 ?predict.cv.glmnet
-
-#pred_train <- predict.cv.glmnet(lasso_price_cv, newx = xTrain, s = "lambda.min")
-pred_train <- predict(lasso_price_cv, newx = xTrain, s = "lambda.min")
-R2_lasso <- 1 - sum((pred_train - yTrain) ^ 2) /
-  sum((mean(yTrain) - yTrain) ^ 2)
-#pred_test <- predict.cv.glmnet(lasso_price_cv, newx = xTest, s = "lambda.min")
-pred_test <- predict(lasso_price_cv, newx = xTest, s = "lambda.min")
-OSR2_lasso <- 1 - sum((pred_test - yTest) ^ 2) /
-  sum((mean(yTrain) - yTest) ^ 2)
 ```
 
-Let's add these as a row to our results data.frame
+We also can't use the performance measures in the `modelr` library, so we have to calculate R squared manually.
 
 ```{r}
-results <- results %>%
-  rbind(list(model = "lasso", R2 = R2_lasso, OSR2 = OSR2_lasso))
-results
+pred_test <- predict(lasso_model_cv, newx = part_mat$test$X, s = "lambda.min")
+R2_lasso <- 1 - sum((pred_test - part_mat$test$Y) ^ 2) / sum((mean(part_mat$test$Y) - part_mat$test$Y) ^ 2)
+R2_lasso
 ```
 
-The overfitting problem has gotten better, but hasn't yet gone away completely. I added a bunch variables for dramatic effect that we could probably screen out before running the LASSO if we really wanted a good model.
+The previous best model had a test error of 0.416, so we now have a slightly better model. Regularization has also given us a way of obtaining an accurate model with fewer nonzero coefficients:
+
+```{r}
+index <- which(lasso_model_cv$lambda == lasso_model_cv$lambda.1se)
+nnzero(lasso_model_cv$glmnet.fit$beta[, index])
+```
 
 One more note on cross-validation: the `glmnet` package has built-in functionality for cross-validation. In situations where that's not the case, `modelr::crossv_kfold()` will prepare data for cross-validation in a nice way.
