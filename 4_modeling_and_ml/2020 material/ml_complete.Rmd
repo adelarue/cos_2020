@@ -63,11 +63,20 @@ We're going to use the Boston Airbnb dataset, where each entry is a property lis
 
 Note here that we haven't specified exactly which variables in the dataset will be used to define each $x_i$. This is a choice which is part of the modeling process, and we will iterate on it.
 
-First, we load a processed version of the dataset:
+First, we load the full dataset, and a processed version of it:
 
 ```{r}
 source("process_listings.R")
-listings <- process_listings("../../data/listings.csv")
+
+listings_full <- process_listings("../../data/listings.csv")
+
+listings <- listings_full %>%
+  
+  # Take only the columns that we need.
+  select(price, accommodates, review_scores_rating, property_type, neighbourhood_cleansed, room_type) %>%
+    
+  # Convert characters to factors.
+  mutate_if(is.character, as.factor)
 ```
 
 ```{r}
@@ -498,7 +507,7 @@ Let's apply this model to the `listings` data. Let's try to predict which listin
 
 ```{r}
 source("expand_amenities.R")
-listingsBig <- expand_amenities(listings)
+listingsBig <- expand_amenities(listings_full)
 
 listingsGLM <- listingsBig %>%
   filter(property_type == "Apartment", price <= 500)
@@ -759,7 +768,7 @@ help(kmeans)
 
 Let's create a new data.frame `listings_numeric` which has the subset of columns that we wish to cluster on.  For the `k-means()` function, all of these columns must be numeric.
 ```{r}
-listings_numeric <- listingsOrig %>%
+listings_numeric <- listings_full %>%
   select(id, latitude, longitude, accommodates, bathrooms, 
          bedrooms, review_scores_rating, price) %>%
   mutate(price = as.numeric(gsub("\\$|,", "", price))) %>%

@@ -20,17 +20,14 @@ process_listings <- function(path) {
            !(neighbourhood_cleansed %in%
                c("Leather District", "Longwood Medical Area"))) %>%
     
+    # Only take columns which have sufficient data.
+    select_if(~sum(is.na(.)) < 0.9 * nrow(listings_raw)) %>%
+    
     # Turn integer columns into doubles.
     mutate_if(is.integer, as.numeric) %>%
     
     # Impute missing data with column medians.
-    mutate_all(~coalesce(., median(., na.rm = TRUE))) %>%
-    
-    # Take only the columns that we need.
-    select(price, accommodates, review_scores_rating, property_type, neighbourhood_cleansed, room_type) %>%
-    
-    # Convert characters to factors.
-    mutate_if(is.character, as.factor)
+    mutate_all(~coalesce(., median(., na.rm = TRUE)))
   
   return(listings)
 }
