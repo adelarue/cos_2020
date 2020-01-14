@@ -46,3 +46,29 @@ This will automatically open a file called `app.R` in your `RStudio`. *You do no
 You will need to close the window before you are able to type into the `RStudio` console again. 
 
 **Please email a screenshot of these two outputs to Arthur (adelarue@mit.edu).**
+
+## Pre-assignment 3: Mini-Project Prep
+
+As discussed in Session 2, the class offers the option to do a mini-project where you can explore a dataset that interests you! The project is optional and its form and scope is completely up to you.
+
+If you choose to do a mini-project, by Tuesday, we expect you to: 
+
+1. Choose a project group (you can also work alone if you prefer).
+2. Choose a data set that interests you. It can be from your research or from an online venue like [Kaggle](http://www.kaggle.com). 
+
+In addition to the below, we therefore expect you to turn in on Stellar the names of your project group and a brief description of your data set, including how you will access it and what makes it interesting. 
+
+**Please email the names of your project group and a brief description of your data set to Andreea (andreeag@mit.edu).**
+
+If you would like a partner but are having trouble finding one, please email Andreea or Arthur and we will do our best to pair you up. 
+
+### Example: 
+
+The following text gives an example of an acceptable submission for the project preparation. 
+
+*Team members: Andreea G.*
+
+*I will be looking at the Kaggle dataset on ski resorts, which is available to download at https://www.kaggle.com/beaubellamy/ski-resort. The dataset lists different ski resorts along with attributes such as country / region, altitude, size, difficulty of slopes, trails, snow reliability, facilities and equipment, average ticket price per age group, other services available. Here are two examples of questions I could investigate: 1. Pricing depending on the ski attributes of the resort, and 2. Number of resorts depending on the attributes of the region. One limitation of this dataset is the missing information of other touristic features of the given regions.*
+
+
+
