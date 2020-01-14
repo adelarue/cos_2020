@@ -490,15 +490,15 @@ nnzero(lasso_model_cv$glmnet.fit$beta[, index])
 
 
 ## Classification
-So far we've looked at models which predict a continuous response variable. There are many related models which predict categorical outcomes, such as whether an email is spam or not, or which digit a handwritten number is. We'll take a brief look at two of these: logistic regression and classification trees.
+So far we've looked at models which predict a continuous response variable. There are many related models which predict categorical outcomes, such as whether an email is spam or not, or which digit a handwritten number is. We'll take a brief look at three of these: logistic regression and classification trees.
 
 ### Logistic Regression
-Logistic regression is part of the class of generalized linear models (GLMs), which build directly on top of linear regression. These models take the linear fit and map it through a non-linear function.Linear regression has the form $$y=w_0+w_1 x_2+w_2 x_,$$ whereas a GLM model has the form $$y=f(w_0+w_1 x_2+w_2 x_2)$$ For logistic regression, the function $f()$ is given by $f(x) = 1/(1+\exp(-x))$ (the *logistic function*), which looks like this:	
+Logistic regression is part of the class of generalized linear models (GLMs), which build directly on top of linear regression. These models take the linear fit and map it through a non-linear function. Linear regression has the form $$y_i=w_0+w_1 x_{i,1}+w_2 x_{i,2}=w^Tx_i,$$ whereas a GLM model has the form $$y_i=f(w^Tx_i)$$ For logistic regression, the function $f()$ is given by $f(z) = 1/(1+\exp(-z))$ (the *logistic function*), which looks like this:	
 
 ```{r}
-xs <- seq(-10, 10, 0.25)
-ys <- exp(xs) / (1 + exp(xs))
-plot(xs, ys)
+zs <- seq(-10, 10, 0.25)
+ys <- exp(zs) / (1 + exp(zs))
+plot(zs, ys)
 ```
 
 Since the function stays between zero and one, it can be interpreted as a mapping from predictor values to a probability of being in one of two classes. 
@@ -506,31 +506,35 @@ Since the function stays between zero and one, it can be interpreted as a mappin
 In OLS regression, the coefficients $w$ were chosen so that they minimize mean squared error:
 $\min_w \: \frac{1}{n} \sum_{i = 1}^{n} (w^{\intercal} x_i - y_i)^2$
 
-And we heard that the optimal $w^{*}$ can be written in closed form. If we tried to minimize squared loss for logistic regression, we would *not* be able to obtain $w^{*}$ easily. Intuitively, we also might want a different loss function. We want to penalize misclassification (e.g. classifying something that is not spam as spam). For logistic regression, the objective is instead to minimize **logistic loss**:
-$$\min_w\: \frac{1}{n}\sum_{i = 1}^{n} -y_i \log(f_w(x))-(1-y_i)\log(1-f_w(x))$$
+And we heard that the optimal $w^{*}$ can be written in closed form. If we tried to minimize mean squared error for logistic regression, we would *not* be able to obtain $w^{*}$ easily. Intuitively, we also might want a different loss function. We want to penalize misclassification (e.g. classifying something that is not spam as spam). For logistic regression, the objective is instead to minimize **logistic loss**:
+$$\min_w\: \frac{1}{n}\sum_{i = 1}^{n} -y_i \log(f(w^Tx_i))-(1-y_i)\log(1-f(w^Tx_i))$$
 When $y_i=1$, this function looks like this:
 ```{r}
-xs <- seq(0, 1, 0.01)
-ys <- -log(xs)
-plot(xs, ys)
+zs <- seq(0, 1, 0.01)
+loss <- -log(zs)
+plot(zs, loss)
 ```
 
 And when $y_i=0$, this function looks like this:
 ```{r}
-xs <- seq(0, 1, 0.01)
-ys <- -log(1-xs)
-plot(xs, ys)
+zs <- seq(0, 1, 0.01)
+loss <- -log(1-zs)
+plot(zs, loss)
 ```
 So when the true value of $y_i$ is 1, the function **heavily** penalizes predicted $y_i$'s close 0, and vice versa.
 
-Let's apply this model to the `listings` data. Let's try to predict which listings have elevators in the building by price. This information is contained in the `amenities` column. This column also contains information which could be useful for prediction, if we can come up with a clean way of representing the amenities. Our goal here is to turn the amenities column into many columns, one for each amenity, and with logical values indicating whether each listing has each amenity. This is just a bit tricky, so I've written a function called `expand_amenities` that will do this for us. We need to `source()` the file that has this function in it, and then we'll call it on the `listings` data frame.	
+Let's apply this model to the `listings` data. Let's try to predict which listings have elevators in the building by using `price` as a predictor. This information is contained in the `amenities` column. Let's see what this column looks like:
+```{r}
+head(listings_full$amenities)
+```
+This column also contains information which could be useful for prediction, if we can come up with a clean way of representing the amenities. Our goal here is to turn the amenities column into many columns, one for each amenity, and with logical values indicating whether each listing has each amenity. This is just a bit tricky, so I've written a function called `expand_amenities` that will do this for us. We need to `source()` the file that has this function in it, and then we'll call it on the `listings_full` data frame.	
 
 ```{r}
 source("expand_amenities.R")
 listingsBig <- expand_amenities(listings_full)
 ```
 
-An indicator for each amenity is now stored in a column called `amentity_x` where `x` is the amenity of interest. Now back to our task of predicting which listings have elevators. To make sure we're asking a sensible question, we'll only consider apartments priced at $500 or less.
+An indicator for each amenity is now stored in a column called `amentity_x` where `x` is the amenity of interest. Now back to our task of predicting which listings have elevators. To make sure we're asking a sensible question, we'll only consider apartments priced at $500 or less. We will use the command `sample.split` from the `caTools` library to split the data. One nice thing about using `sample.split` for classification is that it preserves the ratio of class labels in the training and testing sets.
 
 ```{r}
 listingsGLM <- listingsBig %>%
@@ -540,8 +544,6 @@ spl <- sample.split(listingsGLM$amenity_Elevator_in_Building, SplitRatio = 0.7)
 listingsGLMTrain <- subset(listingsGLM, spl == TRUE)
 listingsGLMTest <- subset(listingsGLM, spl == FALSE)
 ```
-
-One nice thing about using `sample.split` for classification is that it preserves the ratio of class labels in the training and testing sets.
 
 Instead of the `lm()` function, we'll now use `glm()`, but the syntax is almost exactly the same:	
 
@@ -567,11 +569,11 @@ In the meantime, we can explore out-of-sample performance. Ultimately, we want t
 
 There's a really nice metric that measures the quality of all cutoffs simultaneously: *AUC*, for "Area Under the receiver operating characteristic Curve." That's a mouthful, but the idea is simpler: For every cutoff, we'll plot the *false positive rate* against the *true positive rate* and then take the area under this curve. (A *positive* in our case is a listing that has an elevator. So a *true positive* is a listing that we predict has an elevator and really does have an elevator, while a *false positive* is a listing that we predict has an elevator and does *not* actually have an elevator. The *true positive rate* is the number of true positives divided by the total number of positives, and the *false positive rate* is the numbe of false positives divided by the total number of negatives.)	
 
-**Question**: As a sanity check: What is the true positive rate and false positive rate of a random classifier that chooses `has an elevator` with probability $\alpha$? (i.e. a classifier that randomly predicts true $\alpha$% of the time.) What is the AUC for this classifier?
+**Question**: As a sanity check: What is the true positive rate and false positive rate of a random classifier that chooses `has an elevator` with probability of $\alpha$? (i.e. a classifier that randomly predicts *positive* $\alpha$% of the time.) What is the AUC for this classifier?
 
 **Answer**: Both the true positive rate and false positive rate are $\alpha$. The AUC is 0.5.
 
-As the cutoff increases from 0 to 1, the rate of total positives will increase. If the rate of true positives increases faster than the rate of false positives, this is one indication that the model is good. This is what AUC measures.	
+As the cutoff decreases from 1 to 0, the rate of total positives will increase. If the rate of true positives increases faster than the rate of false positives, this is one indication that the model is good. This is what AUC measures.	
 
 The `ROCR` package is one implementation that allows us to plot ROC curves and calculate AUC. Here's an example:	
 ```{r}
@@ -583,7 +585,7 @@ plot(perf, colorize = T)  # ROC curve
 performance(pred_obj, 'auc')@y.values  # AUC - a scalar measure of performance	
 ```
 
-As you can see, the `performance()` function in the `ROCR` package is versatile and allows you to calculate and plot a bunch of different performance metrics. In our case, this model gives an AUC of 0.7. The worst possible is 0.5 - random guessing. We're definitely better than random here, and could likely improve by adding more predictors.	
+As you can see, the `performance()` function in the `ROCR` package is versatile and allows you to calculate and plot a bunch of different performance metrics. In our case, this model gives an AUC of 0.68. The worst possible is 0.5 - random guessing. We're definitely better than random here, and could likely improve by adding more predictors.	
 
 **Exercise**: Add more variables to Logistic Regression. Try to beat the out-of-sample performance for logistic regression of elevators on price by adding new variables. Compute the out-of-sample AUC of the final model, and plot the ROC curve.
 
@@ -591,20 +593,12 @@ As you can see, the `performance()` function in the `ROCR` package is versatile 
 l.glm_2 <- glm(amenity_Elevator_in_Building ~
                  price + neighbourhood_cleansed,
                family = "binomial", data = listingsGLMTrain)
-summary(l.glm_2)
 
 pred_test <- predict(l.glm_2, newdata = listingsGLMTest, type = "response")
 pred_obj <- prediction(pred_test, listingsGLMTest$amenity_Elevator_in_Building)
 perf <- performance(pred_obj, 'tpr', 'fpr')
 performance(pred_obj, 'auc')@y.values
 plot(perf, colorize = TRUE)
-confusionMatrixTest_2 <- table(listingsGLMTest$amenity_Elevator_in_Building,
-                               ifelse(pred_test > 0.5, "pred = 1", "pred = 0"))
-accTest_2 <- sum(diag(confusionMatrixTest_2)) / nrow(listingsGLMTest)
-confusionMatrixTest # CART model
-accTest
-confusionMatrixTest_2 # Logistic Regression Model
-accTest_2
 ```
 
 Evaluation and iteration are also important when choosing classification models. The same technique of splitting the data into a training, validation, and testing sets should used when performing a model selection task.
@@ -653,7 +647,7 @@ print(accTest)
 What is the baseline out-of-sample accuracy? This is just the frequency of the most common class in the training set.
 ```{r}
 table(listingsGLMTest$amenity_Elevator_in_Building)
-max(table(listingsGLMTest$amenity_Elevator_in_Building))/nrow(listingsGLMTest)
+prop.table(table(listingsGLMTest$amenity_Elevator_in_Building))
 ```
 About 70% of the the listings do not have elevators, so if were predicted `no elevator` for every listing, we would get 70% accuracy. This is our naive baseline. Our tree has an accuracy of about 80%, so it is a significant improvement on the baseline.
 
@@ -691,13 +685,13 @@ Cool, so rpart automatically computes all of the cross-validated errors for tree
 plotcp(treeBig)
 ```
 
-One rule of thumb is to select the cp value which first goes below the dotted line, and then prune the tree using this value. Another method is to choose the cp which produces the smallest value of `xerror` in the output from the `printcp` command, which also corresponds to the minimum of plot above. We will use the first method, and select cp=0.011.
+One rule of thumb is to select the cp value which which produces the smallest value of `xerror` in the output from the `printcp` command, which also corresponds to the minimum of plot above. Another method is to choose the cp value that first goes below the dotted line, and then prune the tree using this value.  We will use the the second method, and select cp=0.011.
 ```{r}
 treeFinal <- prune(treeBig, cp = 0.011)
 prp(treeFinal)
 ```
 
-In this case, because the best cp value = 0.011 is very close to thedefault cp value of 0.01, this tree is identical to the initial tree that we constructed.  This occurs because the best tree in this case is relatively simple. Note that we could have also computed the confusion matrices, training/testing accuracy, and baseline accuracy for our logistic regression model. We can also try looking at a more detailed graph of the tree 
+In this case, because the best cp value = 0.011 is very close to thedefault cp value of 0.01, this tree is identical to the initial tree that we constructed.  This occurs because the best tree in this case is relatively simple. Note that we could have also computed the confusion matrices, training/testing accuracy, and baseline accuracy for our logistic regression model. We can also try looking at a more detailed graph of the tree.
 ```{r}
 rpart.plot(treeFinal)
 ```
@@ -709,7 +703,7 @@ rpart.plot(treeFinal)
 dev.off()
 ```
 
-**Exercise**: Tuning a CART model. Let's try building a more complicated CART model and tuning the parameters. Using the below formula, build a CART model to predict `neighbourhood_cleansed` based on price and all of the amenities, tuning the cp parameter.
+**Exercise**: Tuning a CART model. Let's try building a more complicated CART model and tune the parameters. Using the formula below, build a CART model to predict `neighbourhood_cleansed` based on price and all of the amenities, tuning the cp parameter. Plot the final tree with the option "varlen = 0"
 ```{r}
 amenities_string <- listingsGLMTrain %>%
   select(starts_with("amenity")) %>%
@@ -718,7 +712,7 @@ amenities_string <- listingsGLMTrain %>%
 tree_formula <- as.formula(paste("neighbourhood_cleansed ~ price", 
                                  amenities_string, sep = " +  "))
 ```
-Plot the final tree with the option "varlen = 0"
+
 ```{r}
 treeBig2 <- rpart(tree_formula,
                   data = listingsGLMTrain,
@@ -730,42 +724,50 @@ prp(treeFinal2, varlen =  0)
 
 
 ## Random Forests
-We will briefly take a look at random forests, using the `randomForest` library. A random forest is a collection of slightly randomized decision trees (hence the name "forest"), and can be used for classification or prediction. They often have excellent predictive performance, but can be expensive to train. Random forests have many hyperparameters that can be tuned to achieve the best possible predictive performance. Perhaps the most important hypterparameter is the number of trees to include in the forest. More trees results in a longer training time but can improve prediction and decrease overfitting. Other parameters can be seen by inspecting the randomForest command:
+We will briefly take a look at random forests, using the `randomForest` package. A random forest is a collection of slightly randomized decision trees (hence the name "forest"), and can be used for classification or prediction. They often have excellent predictive performance, but can be expensive to train. Random forests have many hyperparameters that can be tuned to achieve the best possible predictive performance. Perhaps the most important hyperparameter is the number of trees to include in the forest. More trees results in a longer training time but can improve prediction and decrease overfitting. Other parameters can be seen by inspecting the randomForest command:
 ```{r}
 ?randomForest
 ```
 
 Let's start by training a random forest model for a classification task. We will perform the same task of predicting whether or not a listing has an elevator, using price and neighborhood as predictors. We will compare the performance of random forest to what we got using our simple CART model. We'll try two models, one using 5 trees and one using 50 trees.
 ```{r}
+set.seed(123)
 listingsGLMTrain$amenity_Elevator_in_Building=as.factor(listingsGLMTrain$amenity_Elevator_in_Building)
 listingsGLMTrain$neighbourhood_cleansed=as.factor(listingsGLMTrain$neighbourhood_cleansed)
-rf5 <- randomForest(amenity_Elevator_in_Building ~ price+neighbourhood_cleansed,
+rf <- randomForest(amenity_Elevator_in_Building ~ price+neighbourhood_cleansed,
                    data = listingsGLMTrain, ntree = 5)
-```
-
-```{r}
-rf100 <- randomForest(amenity_Elevator_in_Building ~ price+neighbourhood_cleansed,
-                   data = listingsGLMTrain, ntree = 100)
-```
-
-
-```{r}
-rf=rf5
 pred_train <- predict(rf)
 confusionMatrixTrain <- table(listingsGLMTrain$amenity_Elevator_in_Building,
                               ifelse(pred_train==TRUE, "pred = 1", "pred = 0"))
 accTrain <- sum(diag(confusionMatrixTrain)) / nrow(listingsGLMTrain)
 print(accTrain)
+
 listingsGLMTest$amenity_Elevator_in_Building=as.factor(listingsGLMTest$amenity_Elevator_in_Building)
 listingsGLMTest$neighbourhood_cleansed=as.factor(listingsGLMTest$neighbourhood_cleansed)
-pred_test <- predict(fnewdata = listingsGLMTest)
+pred_test <- predict(rf,newdata = listingsGLMTest)
 confusionMatrixTest <- table(listingsGLMTest$amenity_Elevator_in_Building,
                              ifelse(pred_test==TRUE, "pred = 1", "pred = 0"))
 accTest <- sum(diag(confusionMatrixTest)) / nrow(listingsGLMTest)
 print(accTest)
 ```
 
-Compare this to what we got using rpart, which had accTrain=0.8189944 and accTest=0.8031291. So random forest with only 5 trees does not do well, but with 100 trees it is doing a bit better than CART! It would likely outperform rpart even more if more variables were used and the other hyperparameters of the random forest model were properly tuned.
+Now we will train a random forest with 100 trees:
+```{r}
+rf <- randomForest(amenity_Elevator_in_Building ~ price+neighbourhood_cleansed,
+                   data = listingsGLMTrain, ntree = 100)
+pred_train <- predict(rf)
+confusionMatrixTrain <- table(listingsGLMTrain$amenity_Elevator_in_Building,
+                              ifelse(pred_train==TRUE, "pred = 1", "pred = 0"))
+accTrain <- sum(diag(confusionMatrixTrain)) / nrow(listingsGLMTrain)
+print(accTrain)
+pred_test <- predict(rf,newdata = listingsGLMTest)
+confusionMatrixTest <- table(listingsGLMTest$amenity_Elevator_in_Building,
+                             ifelse(pred_test==TRUE, "pred = 1", "pred = 0"))
+accTest <- sum(diag(confusionMatrixTest)) / nrow(listingsGLMTest)
+print(accTest)
+```
+
+Compare this to what we got using rpart, which had accTrain=0.8189944 and accTest=0.8031291. So random forest with only 5 trees does not do very well, but with 100 trees it is doing a bit better than CART! It would likely outperform CART even more if more variables were used and the other hyperparameters of the random forest model were properly tuned.
 
 We will now use random forest for the regression task of predicting `price` from `accomodates`.
 ```{r}
@@ -800,13 +802,13 @@ Thus far, our machine learning task has been to predict labels, which were eithe
 
 Next, we consider **Unsupervised Learning**, where we are not given labelled examples, and we simply run ML algorithms on (feature) data, with the purpose of finding interesting structure and patterns in the data.  Let's run one of the widely-used unsupervised learning algorithms, **k-means clustering**, on the `listings` data frame to explore the Airbnb data set.
 
-First, let's look at help page for the function `k-means()`:
+First, let's look at help page for the function `kmeans()`:
 
 ```{r}
 ?kmeans
 ```
 
-Let's create a new data.frame `listings_numeric` which has the subset of columns that we wish to cluster on.  For the `k-means()` function, all of these columns must be numeric.
+Let's create a new data.frame `listings_numeric` which has the subset of columns that we wish to cluster on.  For the `kmeans()` function, all of these columns must be numeric.
 ```{r}
 listings_numeric <- listings_full %>%
   select(id, latitude, longitude, accommodates, bathrooms, 
@@ -815,7 +817,7 @@ listings_numeric <- listings_full %>%
   na.omit()
 str(listings_numeric)
 ```
-Next, run the **k-means** algorithm on the numeric data.frame, with `k = 5` cluster centroids:
+Next, run the **k-means** algorithm on the numeric data.frame, with `k = 5` cluster centers:
 ```{r}
 set.seed(1234)
 kmeans_clust <- kmeans(listings_numeric[,-1:-3],
@@ -831,10 +833,10 @@ Finally let's take a look at where the clusters are located; to do this we  will
 
 To look at color scheme options we can simply type:
 ```{r}
-display.brewer.all(type="qual") # Type can also be set to 'div', 'seq', or 'all'
+display.brewer.all(type="qual") # Type can be set to 'div', 'seq', 'qual', or 'all'
 ```
 
-Let's visualize the distribution of clusters from the houses; first we need to add our cluster labels to the data and then we willdefine as color palette that leaflet can use to help us.
+Let's visualize the distribution of clusters from the houses; first we need to add our cluster labels to the data and then we will define a color palette that leaflet can use to help us.
 ```{r}
 listings_numeric = listings_numeric %>% 
   mutate(clust_label = as.factor(kmeans_clust$cluster))
