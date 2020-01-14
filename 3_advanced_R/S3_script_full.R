@@ -14,7 +14,8 @@
     #' Session > Set Working Directory > To Source File Location
 #' 
 #' Then make sure you set up the relative paths in the read_csv() calls below
-#' so that you are able to read in the two datasets. 
+#' so that you are able to read in the two datasets, which are located in 
+#' cos_2020/data/
 
 #' Load libraries ----------------------------------------------------------
 
@@ -26,7 +27,8 @@ library(lubridate) #' for manipulating dates and times
 #' - The `calendar` data set contains, for each listing, the availability
 #'   and total price per night over the next year. 
 #' 
-#' Make sure your directory is set!
+#' We will use updated version of the datasets which should be available in 
+#' the data directory.
 listings = read_csv('../data/listings_2019.csv')
 calendar = read_csv('../data/calendar_2019.csv')
 
@@ -36,13 +38,14 @@ calendar = read_csv('../data/calendar_2019.csv')
 #' Let's recall the main verbs of dplyr:
 #'   `filter()` to select rows based on their values.
 #'   `arrange()` to reorder rows.
-#'   `select()` and `rename()` to select variables based on their names.
-#'   `mutate()` to add new variables that are functions of existing variables.
+#'   `select()` and `rename()` to select columns based on their names.
+#'   `mutate()` to add new columns that are functions of existing columns
 #'   `summarise()` to condense multiple values to a single value.
 
 #` Filter only listings that are "Downtown", and rating is above 80
 listings %>% 
-    filter(neighbourhood_cleansed == "Downtown", review_scores_rating > 80) %>%
+    filter(neighbourhood_cleansed == "Downtown", 
+           review_scores_rating > 80) %>%
     glimpse
 
 
@@ -63,12 +66,17 @@ listings %>%
 #' Replaces NAs with 0 in the `review_score_rating`. Now `clean_rating` is
 #' a new column appended at the end of the data frame.
 listings %>%
-    mutate(clean_rating = ifelse(is.na(review_scores_rating), 0, review_scores_rating)) %>%
+    mutate(clean_rating = ifelse(
+                            is.na(review_scores_rating), 
+                            0, 
+                            review_scores_rating)) %>%
     select(name, review_scores_rating, clean_rating)
 
 
 #' Calculates the total number of listings and their overall mean rating (`na.rm = T` will omit missing values)
-listings %>% summarise(n = n(), mean_rating = mean(review_scores_rating, na.rm = T)) 
+listings %>%
+    summarise(n = n(),
+              mean_rating = mean(review_scores_rating, na.rm = T)) 
 
 
 #' Bonus verb: `count(...)` will count the number of occurences of each combination of values
@@ -81,13 +89,16 @@ listings %>% count(property_type, bedrooms)
 #' The `group_by(...)` verb creates groups of observations that other verbs will adjust their behaviour to. 
 
 #' `group_by() %>% select()` will be the same but also keep the grouping variables
-listings %>% group_by(neighbourhood_cleansed) %>% select(review_scores_rating)
+listings %>% 
+    group_by(neighbourhood_cleansed) %>% 
+    select(review_scores_rating)
 
 
 #' `group_by() %>% summarise()` will perform aggregation within each group
 listings %>% 
     group_by(neighbourhood_cleansed) %>% 
-    summarise(n = n(), mean_rating = mean(review_scores_rating, na.rm = T)) 
+    summarise(n = n(), 
+              mean_rating = mean(review_scores_rating, na.rm = T)) 
     
 
 #' `group_by() %>% arrange()` will be the same, UNLESS `.by_group=TRUE` in which case 
@@ -338,7 +349,7 @@ listings %>%
 #' You and your friends won the Sloan *Innovation Is Not a Buzzword If You're Doing It*
 #' entrepreneurship award, and have decided to spend the prize money on a long weekend
 #' at one of the best AirBnBs in Boston. You're not yet sure how many days you'll be staying
-#' or how many of you can make it, so you want to create an interactivee dashboard that 
+#' or how many of you can make it, so you want to create an interactive dashboard that 
 #' will tell you prices per night/person for some AirBnBs you like. 
 #' 
 #' Your first task is to find a list of candidate listings that meet your friend group's 
@@ -377,20 +388,22 @@ creme_de_la_creme = listings %>%
 lag(c(1,2,3,4,5), 1)
 lead(c(1,2,3,4,5), 2)
  
-#' What you want from the calendar is, for every Friday in November, those `listing_id`s that are 
+#' What you want from the calendar is, for every Friday in February, those `listing_id`s that are 
 #' `available` on both that Friday AND the following day. Furthermore, the `minimum_nights` should 
 #' be less than your planned 2 days, and the `maximum_nights` should be greater than  your planned 
 #' 2 days. Finally, the output should also have a column for the `total_price` of that stay. 
 #' 
-#' The result should be called `nov_avail` and should look like this: 
+#' The result should be called `avail` and should look like this: 
 #' listing_id    date           total_price
-#'      24240    2019-11-01             550     *24240 was available 11/01 and 11/02*
-#'      24240    2019-11-08             550     *24240 was available 11/08 and 11/09*
+#'      24240    2020-02-07             550     *24240 was available 11/01 and 11/02*
+#'      24240    2020-02-14             550     *24240 was available 11/08 and 11/09*
 #'       ...
 #' 
 #' 
 #' All you  need is a combination of arrange(), group_by(), mutate()/filter() and lead(). 
 #' Think: why is `arrange()` important when using lag/lead?
+#' 
+#' Hint: What will `df %>% group_by(...) %>% mutate(y = x + lead(x))` do? 
 #' 
 #' You may also find the following date functions useful: 
 weekdays(ymd("2019-01-01"))
