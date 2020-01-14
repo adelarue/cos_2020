@@ -68,7 +68,7 @@ library(leaflet)
 ## -----------------------------------------------------------------------------
 source("process_listings.R")
 
-listings_full <- process_listings("../../data/listings.csv")
+listings_full <- process_listings("../data/listings.csv")
 
 listings <- listings_full %>%
   
