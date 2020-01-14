@@ -598,6 +598,7 @@ This is another case when the `summary()` function is less helpful. We can plot 
 ```{r}
 prp(l.rpart)
 ```
+
 To evaluate the prediction accuracy of our classification tree, we count up the number of times each of the following occurs:
  * Y = 1, prediction = 1 (True Positive)
  * Y = 0, prediction = 1 (False Positive)
@@ -694,16 +695,21 @@ tree_formula <- as.formula(paste("neighbourhood_cleansed ~ price",
 
 
 ## Random Forests
-We will briefly take a look at random forests, using the `randomForest` package. A random forest is a collection of slightly randomized decision trees (hence the name "forest"), and can be used for classification or prediction. They often have excellent predictive performance, but can be expensive to train. Random forests have many hyperparameters that can be tuned to achieve the best possible predictive performance. Perhaps the most important hyperparameter is the number of trees to include in the forest. More trees results in a longer training time but can improve prediction and decrease overfitting. Other parameters can be seen by inspecting the randomForest command:
+We will briefly take a look at random forests, using the `randomForest` package. A random forest is a collection of slightly randomized decision trees (hence the name "forest"), and can be used for classification or prediction. They often have excellent predictive performance, but can be expensive to train and lack interpretability. Random forests have many hyperparameters that can be tuned to achieve the best possible predictive performance. Perhaps the most important hyperparameter is the number of trees to include in the forest. More trees results in a longer training time but can improve prediction and decrease overfitting. Other parameters can be seen by inspecting the randomForest command:
 ```{r}
 ?randomForest
 ```
 
-Let's start by training a random forest model for a classification task. We will perform the same task of predicting whether or not a listing has an elevator, using price and neighborhood as predictors. We will compare the performance of random forest to what we got using our simple CART model. We'll try two models, one using 5 trees and one using 50 trees.
+Let's start by training a random forest model for a classification task. We will perform the same task of predicting whether or not a listing has an elevator, using price and neighborhood as predictors. We will compare the performance of random forest to what we got using our simple CART model. We'll try two models, one using 5 trees and one using 100 trees.
 ```{r}
 set.seed(123)
-listingsGLMTrain$amenity_Elevator_in_Building=as.factor(listingsGLMTrain$amenity_Elevator_in_Building)
-listingsGLMTrain$neighbourhood_cleansed=as.factor(listingsGLMTrain$neighbourhood_cleansed)
+listingsGLM = listingsGLM %>% mutate_at(vars(contains("amenity")),~as.factor(.))
+listingsGLM$neighbourhood_cleansed=as.factor(listingsGLM$neighbourhood_cleansed)
+
+spl <- sample.split(listingsGLM$amenity_Elevator_in_Building, SplitRatio = 0.7)
+listingsGLMTrain <- subset(listingsGLM, spl == TRUE)
+listingsGLMTest <- subset(listingsGLM, spl == FALSE)
+
 rf <- randomForest(amenity_Elevator_in_Building ~ price+neighbourhood_cleansed,
                    data = listingsGLMTrain, ntree = 5)
 pred_train <- predict(rf)
@@ -712,8 +718,6 @@ confusionMatrixTrain <- table(listingsGLMTrain$amenity_Elevator_in_Building,
 accTrain <- sum(diag(confusionMatrixTrain)) / nrow(listingsGLMTrain)
 print(accTrain)
 
-listingsGLMTest$amenity_Elevator_in_Building=as.factor(listingsGLMTest$amenity_Elevator_in_Building)
-listingsGLMTest$neighbourhood_cleansed=as.factor(listingsGLMTest$neighbourhood_cleansed)
 pred_test <- predict(rf,newdata = listingsGLMTest)
 confusionMatrixTest <- table(listingsGLMTest$amenity_Elevator_in_Building,
                              ifelse(pred_test==TRUE, "pred = 1", "pred = 0"))
@@ -737,7 +741,36 @@ accTest <- sum(diag(confusionMatrixTest)) / nrow(listingsGLMTest)
 print(accTest)
 ```
 
-Compare this to what we got using rpart, which had accTrain=0.8189944 and accTest=0.8031291. So random forest with only 5 trees does not do very well, but with 100 trees it is doing a bit better than CART! It would likely outperform CART even more if more variables were used and the other hyperparameters of the random forest model were properly tuned.
+Compare this to what we got using rpart, which had accTrain=0.8189944 and accTest=0.8031291. So random forest with only 5 trees does not do very well, but with 100 trees it is doing a bit better than CART! 
+
+Finally, let's try adding a lot more variables. We'll add all of the amenities as variables, and traun a random forest with 50 trees. 
+```{r}
+amenities_string <- listingsGLMTrain %>%
+  select(starts_with("amenity"),-amenity_Elevator_in_Building) %>%
+  names() %>%
+  paste(collapse = " + ")
+rf_formula <- as.formula(paste("amenity_Elevator_in_Building ~ price+neighbourhood_cleansed", 
+                                 amenities_string, sep = " +  "))
+
+rf <- randomForest(rf_formula, data = listingsGLMTrain, ntree = 50)
+pred_train <- predict(rf)
+confusionMatrixTrain <- table(listingsGLMTrain$amenity_Elevator_in_Building,
+                              ifelse(pred_train==TRUE, "pred = 1", "pred = 0"))
+accTrain <- sum(diag(confusionMatrixTrain)) / nrow(listingsGLMTrain)
+print(accTrain)
+pred_test <- predict(rf,newdata = listingsGLMTest)
+confusionMatrixTest <- table(listingsGLMTest$amenity_Elevator_in_Building,
+                             ifelse(pred_test==TRUE, "pred = 1", "pred = 0"))
+accTest <- sum(diag(confusionMatrixTest)) / nrow(listingsGLMTest)
+print(accTest)
+```
+
+The prediction accuracy is now much better, and it doesn't look we are overfitting at all. It would likely be even better if the other hyperparameters of the random forest model were properly tuned! Although random forest models are not very interpretable and hard to visualize, there is a popular method called *variable importance* that is commonly used with random forest models. We will use the function `varImpPlot` form the `randomForest` package. This plot shows us which variables the random forest model has determined are the most important for predicting whether or not a listing contains an elevator. It uses a metric called `MeanDecreaseGini` by default, which is the mean decrease in node impurity (you can read more about this metric online), to rank the importance of all of the predictors used in the model. There are other metrics besides the Gini Importance that can also be used as a metric.
+
+```{r}
+varImpPlot(rf)
+```
+The variable importance plot shows us that the listing's neighborhood, whether or not it has a gym, its price, and whether it has a doorman are the four most important variables for predicting whether a listing will have an elevator. This not only gives us intuition about our random forest model, but can also be used to select variables to train other models.
 
 We will now use random forest for the regression task of predicting `price` from `accomodates`.
 ```{r}

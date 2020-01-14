@@ -102,7 +102,7 @@ head(listings)
 #' 
 #' **Question**: What are the tunable parameters (hyperparameters) for the class of OLS models?
 #' 
-#' **Answer**: There aren't really any. If we restrict ourselves to OLS, then the only choice we need to make is which variables to include as inputs.
+#' **Answer**: ...
 #' 
 #' 
 #' #### Fitting an OLS Model 
@@ -156,10 +156,7 @@ listings %>%
 #' 
 ## -----------------------------------------------------------------------------
 listings %>%
-  add_residuals(ols_model, var = "resid") %>%
-  ggplot(aes(x = accommodates, y = resid)) + 
-  geom_point() +
-  labs(title = "OLS Model Residuals")
+  ...
 
 #' 
 #' Due to the closely spaced values, box plots might tell a better story:
@@ -168,15 +165,12 @@ listings %>%
 #' 
 ## -----------------------------------------------------------------------------
 listings %>%	
-  add_residuals(ols_model, var = "resid") %>%
-  ggplot(aes(x = as.factor(accommodates), y = resid)) + 
-  geom_boxplot() +
-  labs(title = "OLS Model Residual Boxplots")
+  ...
 
 #' 
 #' **Question**: What do these box plots tell us about the model?
 #' 
-#' **Answer**: Although the residuals seem relatively centered around zero, there does appear to be some right skew. Also, the 9 and 10-person accommodation residuals look less centered. Perhaps the model doesn't apply so well here.
+#' **Answer**: ...
 #' 
 #' 
 #' ### Evaluation
@@ -213,7 +207,7 @@ rsquare(ols_model, listings)
 #' 
 #' **Question**: What is the relationship between the loss function and the measure of accuracy used to evaluate a model? How do we know which is the best choice for each?
 #' 
-#' **Answer**: The loss function is used to fit a model, and the measure of accuracy is used to evaluate how well it explains the data. The measure of accuracy usually comes from the task we aim to solve, and the loss function is often something that we will play around with until we find a good model. 
+#' **Answer**: ...
 #' 
 #' 
 #' #### Training, Validation and Testing Splits
@@ -268,15 +262,7 @@ lm("price ~ accommodates", data = part_tib$train)
 #' 
 ## -----------------------------------------------------------------------------
 eval_ols <- function(form, part) {
-  ols_model <- lm(form, data = part$train)
-  
-  result <- tibble(model = list(ols_model),
-                   formula = form,
-                   train_rsq = rsquare(ols_model, part$train),
-                   val_rsq = rsquare(ols_model, part$val),
-                   test_rsq = rsquare(ols_model, part$test))
-  
-  return(result)
+  ...
 }
 
 #' 
@@ -292,7 +278,7 @@ forms <- list(
 #' 
 #' **Question**: Does the third formula still correspond to a linear model?
 #' 
-#' **Answer**: We have created some nonlinear features, so not technically. But we still fit a 'linear' model to these new features -- think of it as augmenting the input vector, $x$, with new features, and then fitting a pure linear model.
+#' **Answer**: ...
 #' 
 #' And now we'll build and evaluate a series of OLS models together, one for each formula:
 #' 
@@ -300,14 +286,12 @@ forms <- list(
 #' 
 ## -----------------------------------------------------------------------------
 ols_models <- forms %>%
-  map(~eval_ols(., part_tib)) %>%
-  bind_rows()
-ols_models
+  ...
 
 #' 
 #' **Question**: Can we say anything definitive about these results?
 #' 
-#' **Answer**: We can be relatively confident that the largest model is the best performing. We also see that the testing performance is significantly worse than the training performance. Usually this indicates overfitting, but then why is the validation performance so similar to the training performance? This is most likely due to our performance estimates being sensitive to the randomness used to select the training/validation/testing partitions. We can check this by changing the random seed defined earlier. Cross-validation, which we will introduce, is one way of addressing this problem.
+#' **Answer**: ...
 #' 
 #' 
 #' ### Regularization
@@ -371,7 +355,7 @@ summary(lasso_model)
 #' 
 #' **Question**: As a sanity check: where does the length of `beta`, 2584, come from?
 #' 
-#' **Answer**: We have 76 different models, and the dimension of the `X` matrix is (3501 by 34). Note that 76 x 34 = 2584.
+#' **Answer**: ...
 #' 
 #' Let's look at some of the coefficients for the different models. We'll start with one where lambda is really high, and check how many coefficients are nonzero:
 #' 
@@ -407,7 +391,7 @@ plot(lasso_model, xvar = "lambda")
 #' 
 #' **Question**: How would we do this using the training/validation/testing splits we have previously defined?
 #' 
-#' **Answer**: Fit models on the training set, varying lambda. Then obtain an estimate of performance for each model on the validation set, and choose the best. Obtain a final estimate of performance for this model on the testing set.
+#' **Answer**: ...
 #' 
 #' Here, because the `glmnet` library makes it easy, we're going to use a similar technique called cross-validation. Generally, we only consider this necessary when we're worried we have too little training data to obtain an accurate estimate of validation performance.
 #' 
@@ -487,7 +471,6 @@ R2_lasso
 index <- which(lasso_model_cv$lambda == lasso_model_cv$lambda.1se)
 nnzero(lasso_model_cv$glmnet.fit$beta[, index])
 
-#' 
 #' 
 #' ## Classification
 #' So far we've looked at models which predict a continuous response variable. There are many related models which predict categorical outcomes, such as whether an email is spam or not, or which digit a handwritten number is. We'll take a brief look at three of these: logistic regression and classification trees.
@@ -571,7 +554,7 @@ listingsGLMTest %>%
 #' 
 #' **Question**: As a sanity check: What is the true positive rate and false positive rate of a random classifier that chooses `has an elevator` with probability of $\alpha$? (i.e. a classifier that randomly predicts *positive* $\alpha$% of the time.) What is the AUC for this classifier?
 #' 
-#' **Answer**: Both the true positive rate and false positive rate are $\alpha$. The AUC is 0.5.
+#' **Answer**: ...
 #' 
 #' As the cutoff decreases from 1 to 0, the rate of total positives will increase. If the rate of true positives increases faster than the rate of false positives, this is one indication that the model is good. This is what AUC measures.	
 #' 
@@ -590,15 +573,7 @@ performance(pred_obj, 'auc')@y.values  # AUC - a scalar measure of performance
 #' **Exercise**: Add more variables to Logistic Regression. Try to beat the out-of-sample performance for logistic regression of elevators on price by adding new variables. Compute the out-of-sample AUC of the final model, and plot the ROC curve.
 #' 
 ## -----------------------------------------------------------------------------
-l.glm_2 <- glm(amenity_Elevator_in_Building ~
-                 price + neighbourhood_cleansed,
-               family = "binomial", data = listingsGLMTrain)
 
-pred_test <- predict(l.glm_2, newdata = listingsGLMTest, type = "response")
-pred_obj <- prediction(pred_test, listingsGLMTest$amenity_Elevator_in_Building)
-perf <- performance(pred_obj, 'tpr', 'fpr')
-performance(pred_obj, 'auc')@y.values
-plot(perf, colorize = TRUE)
 
 #' 
 #' Evaluation and iteration are also important when choosing classification models. The same technique of splitting the data into a training, validation, and testing sets should used when performing a model selection task.
@@ -715,12 +690,7 @@ tree_formula <- as.formula(paste("neighbourhood_cleansed ~ price",
 
 #' 
 ## -----------------------------------------------------------------------------
-treeBig2 <- rpart(tree_formula,
-                  data = listingsGLMTrain,
-                  cp = 0.001)
-plotcp(treeBig2)
-treeFinal2 <- prune(treeBig2, 0.0024)
-prp(treeFinal2, varlen =  0)
+
 
 #' 
 #' 
@@ -800,7 +770,6 @@ print(accTest)
 ## -----------------------------------------------------------------------------
 varImpPlot(rf)
 
-#' 
 #' The variable importance plot shows us that the listing's neighborhood, whether or not it has a gym, its price, and whether it has a doorman are the four most important variables for predicting whether a listing will have an elevator. This not only gives us intuition about our random forest model, but can also be used to select variables to train other models.
 #' 
 #' We will now use random forest for the regression task of predicting `price` from `accomodates`.
