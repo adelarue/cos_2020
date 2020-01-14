@@ -102,7 +102,7 @@ We won't talk about the details behind solving this problem, but the optimal $w^
 
 **Question**: What are the tunable parameters (hyperparameters) for the class of OLS models?
 
-**Answer**: There aren't really any. If we restrict ourselves to OLS, then the only choice we need to make is which variables to include as inputs.
+**Answer**: ...
 
 
 #### Fitting an OLS Model 
@@ -156,10 +156,7 @@ This is helpful to check whether the residuals looks like random noise rather th
 
 ```{r}
 listings %>%
-  add_residuals(ols_model, var = "resid") %>%
-  ggplot(aes(x = accommodates, y = resid)) + 
-  geom_point() +
-  labs(title = "OLS Model Residuals")
+  ...
 ```
 
 Due to the closely spaced values, box plots might tell a better story:
@@ -168,15 +165,12 @@ Due to the closely spaced values, box plots might tell a better story:
 
 ```{r}
 listings %>%	
-  add_residuals(ols_model, var = "resid") %>%
-  ggplot(aes(x = as.factor(accommodates), y = resid)) + 
-  geom_boxplot() +
-  labs(title = "OLS Model Residual Boxplots")
+  ...
 ```
 
 **Question**: What do these box plots tell us about the model?
 
-**Answer**: Although the residuals seem relatively centered around zero, there does appear to be some right skew. Also, the 9 and 10-person accommodation residuals look less centered. Perhaps the model doesn't apply so well here.
+**Answer**: ...
 
 
 ### Evaluation
@@ -213,7 +207,7 @@ The R squared value is what we will use to evaluate the performance of our model
 
 **Question**: What is the relationship between the loss function and the measure of accuracy used to evaluate a model? How do we know which is the best choice for each?
 
-**Answer**: The loss function is used to fit a model, and the measure of accuracy is used to evaluate how well it explains the data. The measure of accuracy usually comes from the task we aim to solve, and the loss function is often something that we will play around with until we find a good model. 
+**Answer**: ...
 
 
 #### Training, Validation and Testing Splits
@@ -268,15 +262,7 @@ Now we'll write a function that accepts a formula and training/validation/testin
 
 ```{r}
 eval_ols <- function(form, part) {
-  ols_model <- lm(form, data = part$train)
-  
-  result <- tibble(model = list(ols_model),
-                   formula = form,
-                   train_rsq = rsquare(ols_model, part$train),
-                   val_rsq = rsquare(ols_model, part$val),
-                   test_rsq = rsquare(ols_model, part$test))
-  
-  return(result)
+  ...
 }
 ```
 
@@ -292,7 +278,7 @@ forms <- list(
 
 **Question**: Does the third formula still correspond to a linear model?
 
-**Answer**: We have created some nonlinear features, so not technically. But we still fit a 'linear' model to these new features -- think of it as augmenting the input vector, $x$, with new features, and then fitting a pure linear model.
+**Answer**: ...
 
 And now we'll build and evaluate a series of OLS models together, one for each formula:
 
@@ -300,14 +286,12 @@ And now we'll build and evaluate a series of OLS models together, one for each f
 
 ```{r}
 ols_models <- forms %>%
-  map(~eval_ols(., part_tib)) %>%
-  bind_rows()
-ols_models
+  ...
 ```
 
 **Question**: Can we say anything definitive about these results?
 
-**Answer**: We can be relatively confident that the largest model is the best performing. We also see that the testing performance is significantly worse than the training performance. Usually this indicates overfitting, but then why is the validation performance so similar to the training performance? This is most likely due to our performance estimates being sensitive to the randomness used to select the training/validation/testing partitions. We can check this by changing the random seed defined earlier. Cross-validation, which we will introduce, is one way of addressing this problem.
+**Answer**: ...
 
 
 ### Regularization
@@ -371,7 +355,7 @@ It does give us some information, though. Notice that `lambda` is a vector of le
 
 **Question**: As a sanity check: where does the length of `beta`, 2584, come from?
 
-**Answer**: We have 76 different models, and the dimension of the `X` matrix is (3501 by 34). Note that 76 x 34 = 2584.
+**Answer**: ...
 
 Let's look at some of the coefficients for the different models. We'll start with one where lambda is really high, and check how many coefficients are nonzero:
 
@@ -407,7 +391,7 @@ Now that we can fit LASSO models to a dataset, we need a way of selecting the on
 
 **Question**: How would we do this using the training/validation/testing splits we have previously defined?
 
-**Answer**: Fit models on the training set, varying lambda. Then obtain an estimate of performance for each model on the validation set, and choose the best. Obtain a final estimate of performance for this model on the testing set.
+**Answer**: ...
 
 Here, because the `glmnet` library makes it easy, we're going to use a similar technique called cross-validation. Generally, we only consider this necessary when we're worried we have too little training data to obtain an accurate estimate of validation performance.
 
