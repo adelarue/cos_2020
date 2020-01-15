@@ -12,7 +12,10 @@ The session will be structured around building supervised learning models (inclu
 
 ## Project Preparation
 
-...
+Working with your project team, use the tools you learned in Session 2 and 3 to produce a short initial report on the dataset you chose. Include at least two visualizations and at least one summary table related to your data. For each, include at least one sentence describing what makes the figure interesting and relevant. Turn in your report as a PDF or in the body of an email, to Andreea (`andreeag@mit.edu`).
+
+Please send one report per team. 
+
 
 ## Technical Preparation
 
