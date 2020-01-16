@@ -29,3 +29,18 @@ library(knitr)
 	kable()
 ```
 
+# Mini-Project
+
+Working with your team, create a short PDF report, in which you perform a short machine learning analysis on your data. Your report should answer the following questions: 
+
+1. What is the question you are aiming to answer with your analysis? What is its scientific or operational significance? 
+2. What algorithm are you using? Why did you choose that one? 
+3. What are the features (independent variables)? Is there a dependent variable? 
+4. What was the outcome of your analysis? Is the model "good" and according to which metrics? 
+
+Additionally, your report should include at least one plot. 
+
+Please email your report to Andreea (`andreeag@mit.edu`).
+
+
+
