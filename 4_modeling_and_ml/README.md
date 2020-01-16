@@ -21,7 +21,7 @@ Please send one report per team.
 
 First, `git pull` to ensure that you have the most up-to-date versions of all of the files for this session. The pre-lecture assignment for this session is **pre_lecture_assignment.R**.  Please open the file, install the relevant R packages, and double-check that you obtain the same output as in the **output-*.png** screenshots.
 
-Then, **upload screenshots of your matching R console to Stellar**.
+Then, **email screenshots of your matching R console to Arthur `adelarue@mit.edu`**.
 
 If you have any questions about installing the required software, feel free to contact Sam (`sgilmour@mit.edu`) or Elisabeth (`epaulson@mit.edu`).
 
