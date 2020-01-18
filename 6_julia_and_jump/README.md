@@ -5,7 +5,7 @@ Julia is a "high-level, high-performance dynamic programming language for techni
 
 ## Preassignment - Install Julia and IJulia
 
-The first step is to install a recent version of Julia. The current version is 1.3. Binaries of Julia for all platforms are available [here](https://julialang.org/downloads/)
+The first step is to install a recent version of Julia. The current version is 1.3. Binaries of Julia for all platforms are available [here](https://julialang.org/downloads/).
 
 IJulia is the Julia version of IPython/Jupyter, that provides a nice notebook interface to run julia code, together with text and visualization.
 
@@ -93,6 +93,7 @@ Run `] add` to add the following packages:
 4. Ipopt
 5. ForwardDiff
 6. GLPK
+7. LinearAlgebra
 
 Run `using <package name>` in the Julia REPL (e.g. `using JuMP`) to test
 there are no errors with the packages you added.
