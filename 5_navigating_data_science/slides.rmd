@@ -7,7 +7,7 @@ output:
   revealjs::revealjs_presentation:
     slide_level: 2
     theme: blood
-    highlight: zenburn
+    highlight: breezedark
     css: slides.css
     reveal_options:
       slideNumber: false
@@ -30,12 +30,9 @@ prices <- list.files('data/prices', full.names = T) %>%
 
 
 ## What's Data Science? {.center}
-
-<div class='fragment'>
-<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">New data scientist definition: A data scientist is a statistician who is wearing a bow tie 😝</p>&mdash; Hadley Wickham (@hadleywickham) <a href="https://twitter.com/hadleywickham/status/906146116412039169?ref_src=twsrc%5Etfw">September 8, 2017</a></blockquote>
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
-</div>
+```{r, out.height = 250, out.width=800, echo = FALSE, fig.align='center'}
+knitr::include_graphics('figs/bow_tie.png')
+```
 
 ## Checks out
 
@@ -87,7 +84,7 @@ knitr::include_graphics('https://ismayc.github.io/moderndiver-book/images/tidy1.
 
 ## Impress This Guy
 
-```{r, out.height = 500, echo = FALSE}
+```{r, out.height = 350, echo = FALSE}
 knitr::include_graphics('figs/not_impressed.jpg')
 ```
 
@@ -111,7 +108,7 @@ knitr::include_graphics('figs/not_impressed.jpg')
 > 5. Maybe a handshake too. 
 
 <div class = 'fragment'>
-```{r, out.height = 350,  echo = FALSE, fig.align='center'}
+```{r, out.height = 350,  echo = FALSE, fig.align='center', out.width=500}
 knitr::include_graphics('figs/handshake.jpg')
 ```
 </div>
