@@ -14,7 +14,7 @@ In addition to the installation instructions from the previous session, we will 
 - Suppressor
 - Gadfly
 - DelimitedFiles
-- TravelingSalesmanHeuristics (via Pkg.clone("https://github.com/evanfields/TravelingSalesmanHeuristics.jl/"))
+- TravelingSalesmanHeuristics (via: pkg> add "https://github.com/evanfields/TravelingSalesmanHeuristics.jl/")
 - Gurobi (see below for installation instructions)
 - MosekTools (see below for installation instructions)
 - Mosek (see below for installation instructions)
