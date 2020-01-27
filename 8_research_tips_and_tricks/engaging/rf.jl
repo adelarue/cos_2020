@@ -4,10 +4,10 @@
 """
 function trainrandomforest(train::DataFrame, val::DataFrame,
 						   max_depth::Int, n_estimators::Int, max_features::Int)
-	Xtr = convert(Matrix, train[2:end])
-	Ytr = train[1]
-	Xva = convert(Matrix, val[2:end])
-	Yva = val[1]
+	Xtr = convert(Matrix, train[!, 2:end])
+	Ytr = train[!, 1]
+	Xva = convert(Matrix, val[!, 2:end])
+	Yva = val[!, 1]
 	rf = RandomForestClassifier(max_depth=max_depth,
 	                            n_estimators=n_estimators,
 	                            max_features=max_features)

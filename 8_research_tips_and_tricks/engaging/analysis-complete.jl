@@ -10,8 +10,8 @@ using JLD2
 include("rf.jl")
 
 # Load the data for training and validation
-train = CSV.read("listings_clean_train.csv", header=false)
-val = CSV.read("listings_clean_val.csv", header=false)
+train = CSV.read("data/listings_clean_train.csv", header=false)
+val = CSV.read("data/listings_clean_val.csv", header=false)
 
 # Load the parameters dataframe
 @load "params.jld2" params
