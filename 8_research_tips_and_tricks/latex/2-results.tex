@@ -1,4 +1,4 @@
-%!TEX root = paper.tex
+%!TEX root = 0-paper.tex
 % The header above is for LaTeXTools, so we can build the PDF from this file
 % Without it, LaTeX will not build the file because it lacks the document class
 % and the rest of the header
@@ -8,7 +8,7 @@
 % The inner tabular environment provides an actual table structure
 % The letter in bracket is a float specification, h stands for here
 % it tells LaTeX to 
-\begin{table}[h]
+\begin{table}[h] \cite{}
 \centering % Always a good idea
 % We create a table with three columns (left-aligned, centered, 
 % right-aligned) separated with vertical lines
@@ -39,31 +39,4 @@ Barack Obama & 57 & Unemployed\\
 % c) heading row is not different from other rows
 
 % Now let's make a good-looking table using the booktabs package
-\begin{table}[h]
-\centering
-\begin{tabular}{lcr}
-\toprule
-Name & Age & Profession\\
-\midrule
-John Doe & 34 & Doctor\\
-Jane Doe & 36 & Lawyer\\
-Barack Obama & 57 & Unemployed\\
-\bottomrule
-\end{tabular}
-\caption{A good table}
-\label{tab:good}
-\end{table}
 
-Table~\ref{tab:bad} looks much worse than Table~\ref{tab:good}.
-
-
-These are my results!
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=\columnwidth]{../plot.pdf}
-\caption{Results of our validation experiments.}
-\label{fig:plot}
-\end{figure}
-
-As we can see in Fig.~\ref{fig:plot}.
