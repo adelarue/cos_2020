@@ -17,7 +17,10 @@ val = CSV.read("listings_clean_val.csv", header=false)
 @load "params.jld2" params
 
 # Get the experiment ID from the arguments that were passed to julia
-experiment_id = ifelse(length(ARGS) > 0, parse(Int, ARGS[1]), 1)
+experiment_id = 1
+if length(ARGS) > 0
+	experiment_id = parse(Int, ARGS[1])
+end
 
 # Set a random seed - always a good idea when using functions you didn't write
 Random.seed!(1776)
