@@ -9,4 +9,4 @@
 #SBATCH --output=logs/experiment_\%a.log
 module load julia/1.2.0
 module load sloan/python/modules/2.7
-srun julia analysis-complete.jl $SLURM_ARRAY_TASK_ID
+srun julia 2-analysis-complete.jl $SLURM_ARRAY_TASK_ID
