@@ -9,13 +9,12 @@ In addition to the installation instructions from the previous session, we will 
 - Distributions
 - Random
 - Plots
+- PyPlot
 - Test
 - Suppressor
 - Gadfly
 - DelimitedFiles
-- PyPlot
-- Test
-- TravelingSalesmanHeuristics (via Pkg.clone("https://github.com/evanfields/TravelingSalesmanHeuristics.jl/"))
+- TravelingSalesmanHeuristics (via: pkg> add "https://github.com/evanfields/TravelingSalesmanHeuristics.jl/")
 - Gurobi (see below for installation instructions)
 - MosekTools (see below for installation instructions)
 - Mosek (see below for installation instructions)
@@ -29,14 +28,14 @@ For this class, you will be using the Mixed-Integer optimization solver Gurobi a
 
 Gurobi is commercial software, but they have a very permissive (and free!) academic license. If you have an older version of Gurobi (>= 7.0) on your computer, that should be fine.
 
-- Go to [gurobi.com](http://www.gurobi.com) and sign up for an account
-- Get an academic license from the website (section 2.1 of the quick-start guide)
-- Download and install the Gurobi optimizer (section 3 of the quick-start guide)
-- Activate your academic license (section 4.1 of the quick-start guide)
-- you need to do the activation step while connected to the MIT network. If you are off-campus, you can use the [MIT VPN](https://ist.mit.edu/vpn) to connect to the network and then activate (get in touch if you have trouble with this).
-- Test your license (section 4.7 of the quick-start guide)
+- Go to [gurobi.com](http://www.gurobi.com) and sign up for an account.
+- Get an academic license from the website (section 2.1 of the quick-start guide).
+- Download and install the Gurobi optimizer (section 3 of the quick-start guide).
+- Activate your academic license (section 4.1 of the quick-start guide).
+- The activation step needs to be done while you're connected to the MIT network. If you are off-campus, you can use the [MIT VPN](https://ist.mit.edu/vpn) to connect to the network and then activate (get in touch if you have trouble with this).
+- Test your license (section 4.7 of the quick-start guide).
 
-- Installing packages in Julia is easy with the Julia package manager. Just open Julia and enter the following command:
+- Install the Gurobi.jl package with the Julia package manager. Just open Julia and enter the following command:
 
 ```jl
 pkg> add Gurobi
@@ -77,7 +76,7 @@ Mosek is commercial software, but they have a very permissive (and free!) academ
 - Go to [mosek.com](https://www.mosek.com/license/request/personal-academic/) and request a personal academic license.
 - Fill out all required forms, and download the .lic file.
 - Place the license file at the appropriate path directory ("/Users/YourUserNameHere/mosek/mosek.lic" on a Mac, "$HOME/mosek/mosek.lic" on UNIX, "%USERPROFILE%\mosek\mosek.lic" on Windows). If you place it in the wrong directory you will get an error when you try to run Mosek, telling you where to put the license file.
-- Install and build the "Mosek", "MosekTools" packages, by running "using Pkg; Pkg.build("Mosek, MosekTools")"
+- Install and build the "Mosek", "MosekTools" packages, by running "pkg> build Mosek MosekTools".
 - Test that your installation is working by running the following code:
 ```jl
 using Mosek, MosekTools, JuMP
