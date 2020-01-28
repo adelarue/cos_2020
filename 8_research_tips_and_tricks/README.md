@@ -35,6 +35,7 @@ julia> Pkg.add("ScikitLearn")
 julia> exit()
 ```
 You can also use the preferred Julia package manager syntax: `julia> ] add ScikitLearn` instead of `using Pkg` and `Pkg.add("ScikitLearn")`.
+
   6. Reopen the julia session: `julia`
   7. Precompile the ScikitLearn package we just installed (may take a few mins) as follows:
 ```julia
